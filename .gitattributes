@@ -1,0 +1,15 @@
+# Normalize line endings: store in repo as LF, check out on Windows as CRLF
+* text=auto
+
+*.py   text diff=python
+*.md   text
+*.csv  text
+*.ipynb text
+
+# Binary files - never do line-ending conversion
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.joblib binary
+*.docx binary
