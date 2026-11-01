@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>IPO Intelligence Terminal | Listing Gain & Range Predictor</title>
+    
+    <!-- Production SEO Metadata -->
+    <meta name="description" content="Institutional Indian IPO intelligence platform. Predict listing day gains, quantile outcome corridors, GMP dynamics, and subscription demand breakdowns with production-grade machine learning." />
+    <meta name="keywords" content="IPO predictor, Indian IPO, NSE, BSE, GMP live, listing gain prediction, SME IPO, subscription status, QIB demand, IPO intelligence" />
+    <meta name="author" content="IPO Intelligence Terminal" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#090a0f" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="IPO Intelligence Terminal V2.0 | Indian Market Listing Predictor" />
+    <meta property="og:description" content="Institutional Indian IPO intelligence platform. Predict listing day gains, quantile outcome corridors, and demand breakdowns." />
+    <meta property="og:site_name" content="IPO Intelligence Terminal" />
+    <meta property="og:image" content="/vite.svg" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="IPO Intelligence Terminal V2.0" />
+    <meta name="twitter:description" content="Institutional Indian IPO intelligence platform. Real-time listing gain, subscription demand, and safety audit models." />
+    <meta name="twitter:image" content="/vite.svg" />
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "IPO Intelligence Terminal",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "All",
+      "softwareVersion": "2.0",
+      "description": "Institutional Indian IPO intelligence platform providing dual-phase ML predictions for listing gains, quantile corridors, and subscription sensitivity.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      }
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      (function() {
+        var t = localStorage.getItem('ipo_theme');
+        if (t !== 'midnight' && t !== 'emerald' && t !== 'cyber') {
+          t = 'midnight';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      })();
+    </script>
+  </head>
+  <body class="text-zinc-100 font-sans antialiased selection:bg-sky-500/30 selection:text-sky-200 overflow-x-hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

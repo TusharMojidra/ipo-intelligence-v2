@@ -1,0 +1,210 @@
+Date,IPO_Name,Actual_Gain,Pred_Lower,Pred_Median,Pred_Upper,Predicted_Range,In_Bucket_80,In_Corridor_10,In_Corridor_15
+2026-05-14,Bagmane Prime Offi...,3.4,-0.52,11.21,22.62,-0.5% to +22.6%,True,True,True
+2026-05-08,Onemi Technology S...,11.7,2.57,7.47,18.41,+2.6% to +18.4%,True,True,True
+2026-04-29,Citius Transnet In...,4.5,-5.87,4.15,20.35,-5.9% to +20.4%,True,True,True
+2026-04-17,Om Power Transmiss...,3.49,-14.65,5.63,21.5,-14.7% to +21.5%,True,True,True
+2026-04-02,Sai Parenteral's L...,3.32,-6.14,-1.58,13.12,-6.1% to +13.1%,True,True,True
+2026-04-02,Powerica Ltd,-5.06,-9.85,-0.06,10.98,-9.9% to +11.0%,True,True,True
+2026-04-02,Amir Chand Jagdish...,-8.02,-30.26,1.97,16.04,-30.3% to +16.0%,True,True,True
+2026-03-30,Central Mine Plann...,-5.35,-8.86,-4.18,8.78,-8.9% to +8.8%,True,True,True
+2026-03-24,GSP Crop Science L...,3.84,-17.91,-5.45,10.91,-17.9% to +10.9%,True,True,True
+2026-03-24,RaajMarg Infra Inv...,8.0,-14.27,0.89,16.11,-14.3% to +16.1%,True,True,True
+2026-03-23,Innovision Ltd,-10.21,-8.51,1.52,16.11,-8.5% to +16.1%,False,False,True
+2026-03-19,Rajputana Stainles...,1.6,-7.65,-0.9,11.97,-7.6% to +12.0%,True,True,True
+2026-03-11,Sedemac Mechatroni...,11.69,-18.01,1.66,13.98,-18.0% to +14.0%,True,False,True
+2026-03-05,Omnitech Engineeri...,-9.69,-14.58,-4.74,9.47,-14.6% to +9.5%,True,True,True
+2026-03-04,PNGS Reva Diamond ...,-3.63,-19.89,-4.13,11.03,-19.9% to +11.0%,True,True,True
+2026-03-02,Clean Max Enviro E...,-9.57,-17.87,-1.96,12.76,-17.9% to +12.8%,True,True,True
+2026-03-02,Shree Ram Twistex ...,-32.69,-26.05,58.11,89.68,-26.0% to +89.7%,False,False,False
+2026-02-27,Gaudium IVF and Wo...,5.06,-8.39,11.02,22.98,-8.4% to +23.0%,True,True,True
+2026-02-16,Aye Finance Ltd,0.0,-7.61,-3.58,10.76,-7.6% to +10.8%,True,True,True
+2026-02-16,Fractal Analytics ...,0.0,-7.93,2.47,13.76,-7.9% to +13.8%,True,True,True
+2026-01-28,Shadowfax Technolo...,-8.87,-11.91,-1.3,12.66,-11.9% to +12.7%,True,True,True
+2026-01-21,Amagi Media Labs L...,-12.19,-2.8,11.93,27.88,-2.8% to +27.9%,False,False,False
+2026-01-19,Bharat Coking Coal...,96.57,31.84,70.82,87.59,+31.8% to +87.6%,False,False,False
+2025-12-30,Gujarat Kidney & S...,5.92,-21.7,7.4,21.52,-21.7% to +21.5%,True,True,True
+2025-12-23,KSH International ...,-3.65,-10.51,-3.26,14.16,-10.5% to +14.2%,True,True,True
+2025-12-19,ICICI Prudential A...,20.38,-57.49,25.08,48.41,-57.5% to +48.4%,True,True,True
+2025-12-17,Nephrocare Health ...,6.89,-0.76,8.8,21.94,-0.8% to +21.9%,True,True,True
+2025-12-17,Park Medi World Lt...,-3.95,-1.71,2.27,18.51,-1.7% to +18.5%,False,True,True
+2025-12-15,Corona Remedies Lt...,36.72,27.34,41.06,78.6,+27.3% to +78.6%,True,True,True
+2025-12-10,Aequs Ltd,12.9,8.56,77.2,129.87,+8.6% to +129.9%,True,False,False
+2025-12-10,Meesho Ltd,45.23,5.63,34.14,56.45,+5.6% to +56.4%,True,False,True
+2025-12-10,Vidya Wires Ltd,0.25,-8.87,21.76,26.2,-8.9% to +26.2%,True,False,False
+2025-11-28,Sudeep Pharma Ltd,23.77,5.23,37.17,63.71,+5.2% to +63.7%,True,False,True
+2025-11-26,Excelsoft Technolo...,12.5,1.7,22.09,67.6,+1.7% to +67.6%,True,True,True
+2025-11-21,Capillary Technolo...,-2.95,0.31,24.75,66.37,+0.3% to +66.4%,False,False,False
+2025-11-20,Fujiyama Power Sys...,-4.21,-4.53,7.43,16.18,-4.5% to +16.2%,True,False,True
+2025-11-19,Tenneco Clean Air ...,25.44,6.47,41.37,69.69,+6.5% to +69.7%,True,False,False
+2025-11-18,Physicswallah Ltd,31.28,-7.65,-2.33,15.66,-7.7% to +15.7%,False,False,False
+2025-11-18,Emmvee Photovoltai...,0.0,-5.42,-1.97,15.66,-5.4% to +15.7%,True,True,True
+2025-11-14,Pine Labs Ltd,9.5,-4.19,1.07,13.53,-4.2% to +13.5%,True,True,True
+2025-11-12,Billionbrains Gara...,14.0,3.31,12.39,25.7,+3.3% to +25.7%,True,True,True
+2025-11-10,Lenskart Solutions...,-2.99,-2.55,12.59,31.25,-2.6% to +31.3%,False,False,False
+2025-11-07,Studds Accessories...,-2.56,-1.82,35.91,59.45,-1.8% to +59.4%,False,False,False
+2025-11-06,Orkla India Ltd,2.95,2.03,21.83,56.89,+2.0% to +56.9%,True,False,False
+2025-10-24,Midwest Ltd,9.4,-33.08,29.76,62.95,-33.1% to +63.0%,True,False,False
+2025-10-17,Canara HSBC Life I...,0.0,-19.02,3.84,12.97,-19.0% to +13.0%,True,True,True
+2025-10-16,Canara Robeco Asse...,5.36,-30.95,5.77,17.89,-31.0% to +17.9%,True,True,True
+2025-10-16,Rubicon Research L...,27.86,-39.53,52.63,78.81,-39.5% to +78.8%,True,False,False
+2025-10-14,LG Electronics Ind...,50.44,-44.53,38.57,63.6,-44.5% to +63.6%,True,False,True
+2025-10-16,Anantam Highways T...,3.02,-9.75,3.04,19.94,-9.8% to +19.9%,True,True,True
+2025-10-13,Tata Capital Ltd,1.23,-37.36,2.03,15.82,-37.4% to +15.8%,True,True,True
+2025-10-08,Advance Agrolife L...,13.0,-18.43,24.19,58.77,-18.4% to +58.8%,True,False,True
+2025-10-07,Fabtech Technologi...,0.0,-14.29,1.8,17.95,-14.3% to +18.0%,True,True,True
+2025-10-07,Glottis Ltd,-31.78,-5.79,1.45,17.95,-5.8% to +18.0%,False,False,False
+2025-10-08,Om Freight Forward...,-38.89,-11.24,8.88,24.71,-11.2% to +24.7%,False,False,False
+2025-10-06,Pace Digitek Ltd,3.58,-7.91,4.07,17.95,-7.9% to +18.0%,True,True,True
+2025-10-03,Jinkushal Industri...,3.31,-20.15,38.72,62.05,-20.2% to +62.1%,True,False,False
+2025-10-03,TruAlt Bioenergy L...,10.89,-36.39,34.33,59.66,-36.4% to +59.7%,True,False,False
+2025-10-01,Jain Resource Recy...,14.33,-6.01,12.04,26.35,-6.0% to +26.3%,True,True,True
+2025-10-01,EPack Prefab Techn...,-8.77,-19.55,2.65,20.94,-19.6% to +20.9%,True,False,True
+2025-10-01,BMW Ventures Ltd,-19.19,-31.41,-1.12,17.95,-31.4% to +18.0%,True,False,False
+2025-09-30,Anand Rathi Share ...,4.37,-8.94,13.68,32.31,-8.9% to +32.3%,True,True,True
+2025-09-30,Seshaasai Technolo...,3.07,-2.82,38.08,68.55,-2.8% to +68.5%,True,False,False
+2025-09-30,Solarworld Energy ...,10.83,-13.18,38.07,69.09,-13.2% to +69.1%,True,False,False
+2025-09-30,Jaro Institute of ...,0.0,-13.4,14.11,33.86,-13.4% to +33.9%,True,False,True
+2025-09-29,Atlanta Electrical...,13.81,1.33,34.68,68.55,+1.3% to +68.5%,True,False,False
+2025-09-29,Ganesh Consumer Pr...,-8.39,-18.46,0.79,20.94,-18.5% to +20.9%,True,True,True
+2025-09-26,GK Energy Ltd,7.84,-0.11,40.67,75.08,-0.1% to +75.1%,True,False,False
+2025-09-26,Saatvik Green Ener...,-1.08,-9.67,7.64,21.36,-9.7% to +21.4%,True,True,True
+2025-09-25,Ivalue Infosolutio...,-4.68,-21.71,-1.99,13.89,-21.7% to +13.9%,True,True,True
+2025-09-24,VMS TMT Ltd,6.06,-1.5,59.72,82.72,-1.5% to +82.7%,True,False,False
+2025-09-23,Euro Pratik Sales ...,10.71,-16.58,-1.32,16.82,-16.6% to +16.8%,True,False,True
+2025-09-17,Dev Accelerator Lt...,0.49,-10.85,57.92,76.71,-10.9% to +76.7%,True,False,False
+2025-09-17,Shringar House of ...,13.76,2.5,44.23,58.37,+2.5% to +58.4%,True,False,False
+2025-09-17,Urban Company Ltd,56.31,8.21,52.04,83.02,+8.2% to +83.0%,True,True,True
+2025-09-09,Amanta Healthcare ...,6.35,-15.17,45.17,89.28,-15.2% to +89.3%,True,False,False
+2025-09-03,Anlon Healthcare L...,0.0,-34.49,18.1,30.6,-34.5% to +30.6%,True,False,False
+2025-09-03,Vikran Engineering...,2.78,-10.38,7.64,25.83,-10.4% to +25.8%,True,True,True
+2025-08-28,Mangal Electrical ...,-0.53,-18.58,3.36,18.15,-18.6% to +18.1%,True,True,True
+2025-08-26,Gem Aromatics Ltd,0.0,-9.99,13.26,30.65,-10.0% to +30.6%,True,False,True
+2025-08-26,Shreeji Shipping G...,7.88,-0.37,28.72,57.18,-0.4% to +57.2%,True,False,False
+2025-08-26,Patel Retail Ltd,19.61,-3.54,57.87,76.74,-3.5% to +76.7%,True,False,False
+2025-08-26,Vikram Solar Ltd,2.41,0.13,25.79,55.87,+0.1% to +55.9%,True,False,False
+2025-08-20,Regaal Resources L...,39.02,23.13,70.24,97.74,+23.1% to +97.7%,True,False,False
+2025-08-19,Bluestone Jeweller...,-1.59,-12.51,-1.31,13.76,-12.5% to +13.8%,True,True,True
+2025-08-14,JSW Cement Ltd,4.08,1.03,1.03,15.37,+1.0% to +15.4%,True,True,True
+2025-08-14,All Time Plastics ...,14.29,-6.4,2.96,15.37,-6.4% to +15.4%,True,False,True
+2025-08-12,Highway Infrastruc...,67.14,18.04,112.39,136.67,+18.0% to +136.7%,True,False,False
+2025-08-18,Knowledge Realty T...,4.0,-11.94,4.8,17.58,-11.9% to +17.6%,True,True,True
+2025-08-06,M & B Engineering Ltd,0.26,-2.44,32.57,40.25,-2.4% to +40.2%,True,False,False
+2025-08-06,Sri Lotus Developers & Realty Ltd,19.4,7.95,43.41,54.04,+8.0% to +54.0%,True,False,False
+2025-08-06,National Securities Depository Ltd (NSDL),10.0,-0.35,26.83,46.75,-0.3% to +46.7%,True,False,False
+2025-08-05,Aditya Infotech Ltd,50.81,4.14,56.39,73.67,+4.1% to +73.7%,True,True,True
+2025-08-05,Laxmi India Finance Ltd,-13.92,-13.65,2.01,11.6,-13.7% to +11.6%,False,False,False
+2025-08-01,Shanti Gold International Ltd,15.13,1.43,54.97,66.73,+1.4% to +66.7%,True,False,False
+2025-07-31,Brigade Hotel Ventures Limited,-8.89,-9.79,3.96,17.81,-9.8% to +17.8%,True,False,True
+2025-07-30,GNG Electronics Limited,47.68,24.8,74.94,83.7,+24.8% to +83.7%,True,False,False
+2025-07-30,Indiqube Spaces Limited,-7.72,-0.36,12.36,19.61,-0.4% to +19.6%,False,False,False
+2025-07-21,Anthem Biosciences Limited,26.86,4.95,33.96,63.0,+5.0% to +63.0%,True,True,True
+2025-07-17,Smartworks Coworking Limited,7.15,-8.09,7.45,18.93,-8.1% to +18.9%,True,True,True
+2025-07-14,Travel Food Services Limited,2.38,-7.28,-0.51,15.96,-7.3% to +16.0%,True,True,True
+2025-07-09,Crizac Limited,14.29,6.4,26.77,57.63,+6.4% to +57.6%,True,False,True
+2025-07-03,Indogulf Cropsciences Limited,0.0,-10.0,12.05,32.8,-10.0% to +32.8%,True,False,True
+2025-07-02,HDB Financial Services Limited,12.84,1.31,16.3,31.83,+1.3% to +31.8%,True,True,True
+2025-07-02,Sambhv Steel Tubes Limited,34.27,3.45,14.17,30.65,+3.4% to +30.6%,False,False,False
+2025-07-01,Globe Civil Projects Limited,28.31,2.63,53.12,86.58,+2.6% to +86.6%,True,False,False
+2025-07-01,Kalpataru Limited,0.02,-4.0,0.19,12.44,-4.0% to +12.4%,True,True,True
+2025-07-01,Ellenbarrie Industrial Gases Limited,23.0,3.45,13.83,31.47,+3.4% to +31.5%,True,True,True
+2025-06-25,Arisinfra Solutions Limited,-5.81,-5.01,2.04,17.73,-5.0% to +17.7%,False,True,True
+2025-06-20,Oswal Pumps Limited,2.93,1.81,25.56,42.98,+1.8% to +43.0%,True,False,False
+2025-06-04,Scoda Tubes Limited,0.0,-8.11,18.51,56.21,-8.1% to +56.2%,True,False,False
+2025-06-03,Prostarm Info Systems Limited,19.05,-8.15,54.46,84.71,-8.1% to +84.7%,True,False,False
+2025-06-02,Aegis Vopak Terminals Limited,-6.38,-4.73,-1.4,12.44,-4.7% to +12.4%,False,True,True
+2025-06-02,Schloss Bangalore Limited,-6.55,-5.72,4.7,15.44,-5.7% to +15.4%,False,False,True
+2025-05-28,Belrise Industries Limited,9.44,6.55,27.1,50.66,+6.5% to +50.7%,True,False,False
+2025-05-27,Borana Weaves Limited,12.5,21.15,90.76,149.06,+21.2% to +149.1%,False,False,False
+2025-05-06,Ather Energy Limited,1.57,-7.29,-1.39,12.44,-7.3% to +12.4%,True,True,True
+2025-02-24,Quality Power Electronics Limited,1.66,-6.49,0.08,11.22,-6.5% to +11.2%,True,True,True
+2025-02-19,Hexaware Technologies Limited,3.25,-12.95,6.64,17.8,-13.0% to +17.8%,True,True,True
+2025-02-17,Ajax Engineering Limited,-5.72,-3.35,3.14,14.79,-3.4% to +14.8%,False,True,True
+2025-02-04,Dr Agarwal's Healthcare Limited,-1.27,-8.78,2.35,10.02,-8.8% to +10.0%,True,True,True
+2025-01-29,Denta Water & Infrastructure Limited,12.24,12.48,94.75,138.38,+12.5% to +138.4%,False,False,False
+2025-01-23,Stallion India Fluorochem Limited,33.33,15.54,93.13,149.44,+15.5% to +149.4%,True,False,False
+2025-01-20,Laxmi Dental Limited,23.36,1.57,71.91,102.33,+1.6% to +102.3%,True,False,False
+2025-01-17,Capital Infra Trust,0.0,-37.66,-0.82,15.89,-37.7% to +15.9%,True,True,True
+2025-01-14,Quadrant Future Tek Limited,28.97,12.91,89.81,142.0,+12.9% to +142.0%,True,False,False
+2025-01-13,Standard Glass Lining Technology Limited,25.71,16.63,92.41,92.41,+16.6% to +92.4%,True,False,False
+2025-01-07,Indo Farm Equipment Limited,20.19,21.83,106.62,142.25,+21.8% to +142.3%,False,False,False
+2024-12-31,Unimech Aerospace and Manufacturing Limited,89.94,21.01,69.52,78.89,+21.0% to +78.9%,False,False,False
+2024-12-30,Ventive Hospitality Limited,11.69,-4.92,6.55,15.83,-4.9% to +15.8%,True,True,True
+2024-12-30,Carraro India Limited,-6.25,-10.3,-3.69,10.12,-10.3% to +10.1%,True,True,True
+2024-12-30,Senores Pharmaceuticals Limited,51.84,-1.68,76.89,144.76,-1.7% to +144.8%,True,False,False
+2024-12-27,Transrail Lighting Limited,35.45,2.74,40.24,63.73,+2.7% to +63.7%,True,True,True
+2024-12-27,Dam Capital Advisors Limited,38.83,4.24,52.11,77.87,+4.2% to +77.9%,True,False,True
+2024-12-27,Mamata Machinery Limited,146.91,14.12,93.91,124.06,+14.1% to +124.1%,False,False,False
+2024-12-27,Sanathan Textiles Limited,30.56,-8.75,15.04,38.1,-8.7% to +38.1%,True,False,False
+2024-12-27,Concord Enviro Systems Limited,18.69,-10.01,3.53,15.37,-10.0% to +15.4%,False,False,False
+2024-12-20,International Gemmological Institute (India) Limited,21.07,-2.71,10.63,40.76,-2.7% to +40.8%,True,False,True
+2024-12-19,Inventurus Knowledge Solutions Limited,39.65,0.2,16.21,56.55,+0.2% to +56.5%,True,False,False
+2024-12-18,Vishal Mega Mart Limited,41.03,5.47,18.11,31.47,+5.5% to +31.5%,False,False,False
+2024-12-18,One Mobikwik Systems Limited,58.51,25.07,76.8,129.99,+25.1% to +130.0%,True,False,False
+2024-12-18,Sai Life Sciences Limited,20.22,-1.76,9.6,20.91,-1.8% to +20.9%,True,False,True
+2024-12-06,Suraksha Diagnostic Limited,-0.91,-4.33,-1.61,12.44,-4.3% to +12.4%,True,True,True
+2024-11-29,Enviro Infra Engineers Limited,47.3,11.28,52.36,72.13,+11.3% to +72.1%,True,True,True
+2024-11-27,NTPC Green Energy Limited,3.33,-8.54,-0.26,12.44,-8.5% to +12.4%,True,True,True
+2024-11-22,Zinka Logistics Solution Limited (BlackBuck),2.22,-11.92,-5.43,8.62,-11.9% to +8.6%,True,True,True
+2024-11-14,Niva Bupa Health Insurance Company Limited,6.08,-11.18,-4.19,8.62,-11.2% to +8.6%,True,False,True
+2024-11-13,Swiggy Limited,5.64,-11.21,0.25,11.61,-11.2% to +11.6%,True,True,True
+2024-11-13,ACME Solar Holdings Limited,-10.38,-8.03,-2.63,11.61,-8.0% to +11.6%,False,True,True
+2024-11-12,Sagility India Limited,3.53,-1.49,0.4,14.6,-1.5% to +14.6%,True,True,True
+2024-11-04,Afcons Infrastructure Limited,-7.12,-5.09,2.67,14.6,-5.1% to +14.6%,False,True,True
+2024-10-30,Godavari Biorefineries Limited,-11.78,-12.14,-4.05,8.98,-12.1% to +9.0%,True,True,True
+2024-10-28,Deepak Builders & Engineers India Limited,-2.22,-5.47,28.82,40.85,-5.5% to +40.9%,True,False,False
+2024-10-28,Waaree Energies Limited,69.66,3.2,42.72,60.09,+3.2% to +60.1%,False,False,False
+2024-10-22,Hyundai Motor India Limited,-1.48,-21.77,1.72,9.83,-21.8% to +9.8%,True,True,True
+2024-10-15,Garuda Construction and Engineering Limited,8.63,-18.57,3.07,16.22,-18.6% to +16.2%,True,True,True
+2024-10-04,Diffusion Engineers Limited,11.9,-35.43,71.61,145.94,-35.4% to +145.9%,True,False,False
+2024-10-03,KRN Heat Exchanger and Refrigeration Limited,113.64,22.01,95.8,132.02,+22.0% to +132.0%,True,False,False
+2024-09-30,Manba Finance Limited,25.0,13.61,107.8,139.4,+13.6% to +139.4%,True,False,False
+2024-09-24,Arkade Developers Limited,37.42,7.87,46.95,71.98,+7.9% to +72.0%,True,True,True
+2024-09-24,Northern ARC Capital Limited,33.46,-14.04,52.06,71.64,-14.0% to +71.6%,True,False,False
+2024-09-24,Western Carriers Limited,-1.16,2.87,21.91,26.33,+2.9% to +26.3%,False,False,False
+2024-09-17,P N Gadgil Jewellers Limited,73.75,4.39,22.12,57.99,+4.4% to +58.0%,False,False,False
+2024-09-16,Tolins Tyres Limited,0.44,-7.7,11.9,25.72,-7.7% to +25.7%,True,False,True
+2024-09-16,Bajaj Housing Finance Limited,114.29,11.04,34.28,63.42,+11.0% to +63.4%,False,False,False
+2024-09-16,Kross Limited,0.0,1.97,8.3,24.98,+2.0% to +25.0%,False,True,True
+2024-09-12,Shree Tirupati Balajee Agro Trading Company Limited,11.93,15.4,80.11,105.93,+15.4% to +105.9%,False,False,False
+2024-09-09,Gala Precision Engineering Limited,41.78,5.96,99.52,129.29,+6.0% to +129.3%,True,False,False
+2024-09-06,Baazar Style Retail Limited,0.0,-1.27,25.34,52.05,-1.3% to +52.0%,True,False,False
+2024-09-04,Ecos (India) Mobility & Hospitality Limited,17.16,3.53,25.34,61.37,+3.5% to +61.4%,True,True,True
+2024-09-03,Premier Energies Limited,120.22,5.78,41.3,65.24,+5.8% to +65.2%,False,False,False
+2024-08-28,Orient Technologies Limited,40.78,24.12,86.68,94.89,+24.1% to +94.9%,True,False,False
+2024-08-26,Interarch Building Products Limited,43.47,4.28,45.7,79.35,+4.3% to +79.3%,True,True,True
+2024-08-20,Saraswati Saree Depot Limited,25.0,-3.18,57.96,104.34,-3.2% to +104.3%,True,False,False
+2024-08-13,Brainbees Solutions Limited,34.41,-0.32,10.09,18.1,-0.3% to +18.1%,False,False,False
+2024-08-13,Unicommerce eSolutions Limited,112.96,22.98,94.65,147.99,+23.0% to +148.0%,True,False,False
+2024-08-09,Ola Electric Mobility Limited,-0.01,-7.37,-1.04,15.15,-7.4% to +15.1%,True,True,True
+2024-08-08,Ceigall India Limited,2.99,-2.79,8.22,21.94,-2.8% to +21.9%,True,True,True
+2024-08-06,Akums Drugs and Pharmaceuticals Limited,6.77,-3.92,27.72,54.76,-3.9% to +54.8%,True,False,False
+2024-07-26,Sanstar Limited,12.0,3.09,53.61,77.04,+3.1% to +77.0%,True,False,False
+2024-07-10,Emcure Pharmaceuticals Limited,31.45,-0.59,45.19,69.78,-0.6% to +69.8%,True,False,True
+2024-07-10,Bansal Wire Industries Limited,37.52,1.12,28.11,68.15,+1.1% to +68.2%,True,True,True
+2024-07-03,Vraj Iron & Steel Limited,15.94,20.81,54.5,87.99,+20.8% to +88.0%,False,False,False
+2024-07-02,Allied Blenders and Distillers Limited,13.2,2.58,11.75,27.93,+2.6% to +27.9%,True,True,True
+2024-06-28,Stanley Lifestyles Limited,35.23,-24.95,6.04,16.93,-24.9% to +16.9%,False,False,False
+2024-04-25,Vodafone Idea Ltd ,9.09,3.8,6.53,17.89,+3.8% to +17.9%,True,True,True
+2024-04-12,Bharti Hexacom Ltd ,32.49,-1.14,15.85,26.58,-1.1% to +26.6%,False,False,False
+2024-04-03,SRM Contractors Ltd ,7.14,-8.11,50.15,75.18,-8.1% to +75.2%,True,False,False
+2024-03-21,Krystal Integrated Services Ltd ,11.19,-26.59,7.31,16.46,-26.6% to +16.5%,True,True,True
+2024-03-19,Popular Vehicles & Services Ltd ,-1.02,-15.59,-5.31,12.44,-15.6% to +12.4%,True,True,True
+2024-03-14,Gopal Snacks Ltd,-12.72,-12.54,1.39,17.73,-12.5% to +17.7%,False,False,True
+2024-03-13,J.G.Chemicals Ltd ,-4.52,-5.19,15.09,31.75,-5.2% to +31.7%,True,False,False
+2024-03-12,R K Swamy Ltd ,-12.5,-2.57,14.01,26.2,-2.6% to +26.2%,False,False,False
+2024-03-07,Mukka Proteins Ltd ,57.14,19.85,60.51,101.02,+19.9% to +101.0%,True,True,True
+2024-03-12,Indus Infra Trust ,1.0,-1.24,-1.24,20.3,-1.2% to +20.3%,True,True,True
+2024-03-05,Exicom Tele-Systems Ltd ,85.92,27.14,73.09,113.55,+27.1% to +113.5%,True,False,True
+2024-03-05,Platinum Industries Ltd ,33.33,-2.49,53.32,89.43,-2.5% to +89.4%,True,False,False
+2024-02-29,GPT Healthcare Ltd ,16.21,-0.67,1.19,18.51,-0.7% to +18.5%,True,False,False
+2024-02-20,Vibhor Steel Tubes Limited,178.81,10.18,106.75,135.54,+10.2% to +135.5%,False,False,False
+2024-02-16,Entero Healthcare Solutions Limited,-1.03,-5.12,-4.18,12.81,-5.1% to +12.8%,True,True,True
+2024-02-14,Jana Small Finance Bank Limited,-4.35,-3.41,9.29,29.47,-3.4% to +29.5%,False,False,True
+2024-02-14,Capital Small Finance Bank Limited,-7.05,-22.86,0.01,18.1,-22.9% to +18.1%,True,True,True
+2024-02-14,Rashi Peripherals Limited,7.72,2.78,25.15,56.81,+2.8% to +56.8%,True,False,False
+2024-02-12,Apeejay Surrendra Group (conglomerate),20.65,6.05,39.88,55.84,+6.0% to +55.8%,True,False,False
+2024-02-06,BLS E-Services Limited,128.89,28.07,90.87,141.35,+28.1% to +141.4%,True,False,False
+2024-01-31,Nova Agritech Limited,36.59,-17.15,74.02,136.88,-17.2% to +136.9%,True,False,False
+2024-01-30,Epack Durable Limited,-2.17,2.84,14.05,23.55,+2.8% to +23.6%,False,False,False
+2024-01-23,Medi Assist Healthcare Services Limited,11.24,-3.79,9.42,29.1,-3.8% to +29.1%,True,True,True
+2024-01-16,Jyoti CNC Automation Limited,12.39,0.23,27.93,46.61,+0.2% to +46.6%,True,False,False

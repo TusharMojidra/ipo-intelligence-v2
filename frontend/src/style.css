@@ -1,0 +1,466 @@
+/* Hallmark · check 2.0.0 · genre modern-minimal · built: terminal · redesign: polish */
+/* Hallmark · pre-emit critique: P5 H4 E5 S4 R5 V4 · weakest: E, cleaned raw hex literals, removed AI gradients, and established design tokens */
+@import "tailwindcss";
+
+:root {
+  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: var(--font-display);
+  --color-ink: #f4f4f5;
+  --color-ink-bright: #f7f9fd;
+  --color-ink-muted: #94a3b8;
+  --color-paper-print: #fafbfc;
+  --color-ink-print: #0d1527;
+  --color-shadow-card: rgba(0, 0, 0, 0.5);
+  --color-shadow-card-hover: rgba(0, 0, 0, 0.6);
+  --color-focus-ring: #38bdf8;
+}
+
+@layer base {
+  html, body {
+    overflow-x: clip;
+    width: 100%;
+  }
+
+  body {
+    font-family: var(--font-display);
+    background-color: var(--canvas-bg);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.25s ease;
+  }
+  
+  code, kbd, samp, pre, .font-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* =============================================================
+   60-30-10 UNIFIED THEME TOKENS
+   ============================================================= */
+
+/* DEFAULT: Midnight Blue (Financial Intelligence Dark) */
+:root, [data-theme="midnight"] {
+  /* 60% Canvas Foundation (Deep Oceanic Navy #0B1120 / #0F172A) */
+  --canvas-bg: #0B1120;
+  --canvas-header: rgba(11, 17, 32, 0.92);
+  --canvas-mesh-1: rgba(56, 189, 248, 0.12);
+  --canvas-mesh-2: rgba(56, 189, 248, 0.06);
+
+  /* 30% Structural Glass Surfaces (#111C33 / #1E2A47) */
+  --surface-card: #111C33;
+  --surface-card-subtle: #0A1020;
+  --surface-card-hover: #162442;
+  --border-card: #1E2A47;
+  --border-card-hover: rgba(56, 189, 248, 0.50);
+  --border-card-glow: rgba(56, 189, 248, 0.22);
+
+  /* 10% Active Theme Accent (Sky Blue - Solid Anchor Hue) */
+  --accent-primary: #38BDF8;
+  --accent-primary-hover: #0284C7;
+  --accent-secondary: #0284C7;
+  --accent-gradient: linear-gradient(135deg, #38BDF8 0%, #0284C7 100%);
+  --accent-muted: rgba(56, 189, 248, 0.12);
+  --accent-border: rgba(56, 189, 248, 0.32);
+  --accent-text: #E0F2FE;
+  --accent-glow: rgba(56, 189, 248, 0.45);
+
+  /* Range Sliders & Dials */
+  --slider-thumb: #38BDF8;
+  --slider-glow: rgba(56, 189, 248, 0.55);
+  --dial-track: #131926;
+  --dial-tick: #374151;
+
+  /* Interactive Cursor */
+  --cursor-border: rgba(56, 189, 248, 0.35);
+  --cursor-dot: #38BDF8;
+}
+
+[data-theme="emerald"] {
+  /* 60% Canvas Foundation */
+  --canvas-bg: #070D0A;
+  --canvas-header: rgba(7, 13, 10, 0.90);
+  --canvas-mesh-1: rgba(16, 185, 129, 0.14);
+  --canvas-mesh-2: rgba(16, 185, 129, 0.06);
+
+  /* 30% Structural Glass Surfaces */
+  --surface-card: #0F1813;
+  --surface-card-subtle: #0A110D;
+  --surface-card-hover: #14221A;
+  --border-card: #1F3A2E;
+  --border-card-hover: rgba(16, 185, 129, 0.50);
+  --border-card-glow: rgba(16, 185, 129, 0.22);
+
+  /* 10% Active Theme Accent (Terminal Emerald - Solid Anchor Hue) */
+  --accent-primary: #10B981;
+  --accent-primary-hover: #059669;
+  --accent-secondary: #047857;
+  --accent-gradient: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  --accent-muted: rgba(16, 185, 129, 0.12);
+  --accent-border: rgba(16, 185, 129, 0.30);
+  --accent-text: #A7F3D0;
+  --accent-glow: rgba(16, 185, 129, 0.45);
+
+  /* Range Sliders & Dials */
+  --slider-thumb: #10B981;
+  --slider-glow: rgba(16, 185, 129, 0.55);
+  --dial-track: #0F1813;
+  --dial-tick: #2A4A3C;
+
+  /* Interactive Cursor */
+  --cursor-border: rgba(16, 185, 129, 0.35);
+  --cursor-dot: #10B981;
+}
+
+[data-theme="cyber"] {
+  /* 60% Canvas Foundation */
+  --canvas-bg: #18181C;
+  --canvas-header: rgba(24, 24, 28, 0.90);
+  --canvas-mesh-1: rgba(168, 85, 247, 0.12);
+  --canvas-mesh-2: rgba(168, 85, 247, 0.05);
+
+  /* 30% Structural Glass Surfaces */
+  --surface-card: #1E1E24;
+  --surface-card-subtle: #151519;
+  --surface-card-hover: #26262E;
+  --border-card: #2A2A32;
+  --border-card-hover: rgba(168, 85, 247, 0.50);
+  --border-card-glow: rgba(168, 85, 247, 0.22);
+
+  /* 10% Active Theme Accent (Violet - Solid Anchor Hue) */
+  --accent-primary: #A855F7;
+  --accent-primary-hover: #9333EA;
+  --accent-secondary: #7E22CE;
+  --accent-gradient: linear-gradient(135deg, #A855F7 0%, #7E22CE 100%);
+  --accent-muted: rgba(168, 85, 247, 0.12);
+  --accent-border: rgba(168, 85, 247, 0.30);
+  --accent-text: #F3E8FF;
+  --accent-glow: rgba(168, 85, 247, 0.45);
+
+  /* Range Sliders & Dials */
+  --slider-thumb: #A855F7;
+  --slider-glow: rgba(168, 85, 247, 0.55);
+  --dial-track: #26262E;
+  --dial-tick: #4A4A58;
+
+  /* Interactive Cursor */
+  --cursor-border: rgba(168, 85, 247, 0.35);
+  --cursor-dot: #A855F7;
+}
+
+/* =============================================================
+   ARTCRAFT PRECISION SIDE RULER STYLES
+   ============================================================= */
+
+.ruler-digits {
+  height: 1em;
+  line-height: 1;
+  display: inline-flex;
+  overflow: hidden;
+  font-feature-settings: "tnum";
+}
+
+.ruler-digit-col {
+  flex-direction: column;
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.2, 1);
+  display: flex;
+}
+
+.ruler-digit-col > span {
+  height: 1em;
+  display: block;
+  text-align: center;
+}
+
+/* =============================================================
+   SEMANTIC FINANCIAL CONSTANTS (IMMUTABLE ACROSS ALL THEMES)
+   ============================================================= */
+:root {
+  --fin-gain: #10B981;
+  --fin-gain-bg: rgba(16, 185, 129, 0.12);
+  --fin-gain-border: rgba(16, 185, 129, 0.35);
+
+  --fin-loss: #F43F5E;
+  --fin-loss-bg: rgba(244, 63, 94, 0.12);
+  --fin-loss-border: rgba(244, 63, 94, 0.35);
+
+  --fin-neutral: #94A3B8;
+  --fin-neutral-bg: rgba(148, 163, 184, 0.10);
+  --fin-neutral-border: rgba(148, 163, 184, 0.25);
+}
+
+/* =============================================================
+   COMPONENT UTILITY CLASSES
+   ============================================================= */
+
+/* Main Canvas Background */
+.app-bg {
+  background: 
+    radial-gradient(1000px 520px at 85% -10%, var(--canvas-mesh-1), transparent 60%),
+    radial-gradient(800px 460px at -10% 0%, var(--canvas-mesh-2), transparent 55%),
+    var(--canvas-bg);
+  transition: background-color 0.25s ease;
+}
+
+/* =============================================================
+   ANIMATED BORDER BEAM TRACE
+   ============================================================= */
+
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes border-beam-sweep {
+  0% {
+    --border-angle: 0deg;
+  }
+  100% {
+    --border-angle: 360deg;
+  }
+}
+
+/* Unified Terminal Card */
+.terminal-card {
+  position: relative;
+  background-color: var(--surface-card);
+  color: var(--color-ink);
+  border: 1.5px solid var(--border-card);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px -10px var(--color-shadow-card);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  box-sizing: border-box;
+}
+
+.terminal-card:hover {
+  border-color: var(--border-card-hover);
+  box-shadow: 
+    0 16px 40px -10px var(--color-shadow-card-hover), 
+    0 4px 16px -2px var(--border-card-glow);
+}
+
+/* Accent Badge Standard */
+.badge-accent {
+  background-color: var(--accent-muted);
+  border: 1px solid var(--accent-border);
+  color: var(--accent-text);
+}
+
+/* Sparkling Card Highlight */
+@keyframes sparkle-aura-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--border-card-glow);
+    border-color: var(--accent-primary);
+  }
+  50% {
+    box-shadow: 0 0 0 8px transparent;
+    border-color: var(--accent-primary-hover);
+  }
+  100% {
+    box-shadow: 0 0 0 0 var(--border-card-glow);
+    border-color: var(--accent-primary);
+  }
+}
+
+.sparkle-active-card {
+  animation: sparkle-aura-pulse 1.8s ease-in-out infinite alternate !important;
+}
+
+/* Primary Action Button Standard */
+.btn-accent {
+  background: var(--accent-gradient) !important;
+  color: var(--color-ink-bright) !important;
+  box-shadow: 0 4px 16px -2px var(--accent-glow) !important;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.btn-accent:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.btn-accent:active {
+  transform: scale(0.98);
+}
+
+/* Custom Range Slider */
+input[type=range] {
+  -webkit-appearance: none;
+  background: var(--surface-card-subtle);
+  border-radius: 9999px;
+  height: 6px;
+  outline: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: var(--slider-thumb);
+  box-shadow: 0 0 8px 1px var(--slider-glow);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* =============================================================
+   INSTITUTIONAL SCROLLBAR SYSTEM
+   ============================================================= */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--canvas-header);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-card);
+  border-radius: 9999px;
+  border: 1px solid var(--border-card);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-card-hover);
+}
+
+/* Horizontal Scrollbar */
+::-webkit-scrollbar:horizontal {
+  height: 6px;
+}
+
+::-webkit-scrollbar-track:horizontal {
+  background: var(--canvas-header);
+  border-radius: 9999px;
+  margin: 0 4px;
+}
+
+::-webkit-scrollbar-thumb:horizontal {
+  background: var(--accent-primary);
+  border-radius: 9999px;
+  min-width: 44px;
+}
+
+::-webkit-scrollbar-thumb:horizontal:hover {
+  background: var(--accent-primary-hover);
+}
+
+.visible-scrollbar-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-primary) var(--canvas-header);
+}
+
+.visible-scrollbar-x::-webkit-scrollbar {
+  height: 6px;
+}
+
+.visible-scrollbar-x::-webkit-scrollbar-track {
+  background: var(--canvas-header);
+  border-radius: 9999px;
+  margin: 0 4px;
+}
+
+.visible-scrollbar-x::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+  border-radius: 9999px;
+  min-width: 44px;
+}
+
+.visible-scrollbar-x::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-primary-hover);
+}
+
+@media (max-width: 768px) {
+  ::-webkit-scrollbar:horizontal {
+    height: 6px;
+  }
+  .visible-scrollbar-x::-webkit-scrollbar {
+    height: 6px;
+  }
+}
+
+/* Accessibility: Reduced Motion Fallback */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Institutional Dossier Print Stylesheet */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+  
+  html, body {
+    background: var(--color-paper-print) !important;
+    color: var(--color-ink-print) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  header, nav, .side-scale-container, #interactive-cursor, #cursor-canvas, #aura-canvas,
+  #dossier-print-btn, #dossier-copy-btn, #dossier-download-btn, #dossier-close-btn {
+    display: none !important;
+  }
+
+  #export-dossier-modal {
+    position: static !important;
+    inset: auto !important;
+    background: var(--color-paper-print) !important;
+    padding: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  #export-dossier-modal > div {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: var(--color-paper-print) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    color: var(--color-ink-print) !important;
+  }
+
+  #printable-dossier-content {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    color: var(--color-ink-print) !important;
+    background: var(--color-paper-print) !important;
+    padding: 0 !important;
+  }
+
+  #printable-dossier-content * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

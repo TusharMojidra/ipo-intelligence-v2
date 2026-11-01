@@ -8,10 +8,14 @@ __pycache__/
 venv/
 env/
 
-# Local secrets / config
+# Local secrets / config / databases
 .env
 .env.*
 *.pem
+*.db
+data/*.db
+data/app.db
+data/processed/upcoming_ipos_cache.json
 
 # Editor backup & temporary files
 *.bak
@@ -21,10 +25,17 @@ env/
 Thumbs.db
 .vscode/
 .idea/
+*_backup*/
 
-# Agent tooling (local skills library, not part of the project)
+# Agent tooling & local metadata
 .agents/
+.freebuff/
 skills-lock.json
+
+# Node & Frontend build output
+node_modules/
+frontend/dist/
+frontend/node_modules/
 
 # Test / coverage / build output
 .pytest_cache/

@@ -1,0 +1,2 @@
+Model,Best_Params,Accuracy,Precision,Recall,F1
+VotingEnsemble_Phase2_binary,"Voting(XGB n_est=200,depth=4,lr=0.03 + RF n_est=300,depth=8), soft voting",0.6333333333333333,0.5523829431438128,0.6333333333333333,0.5776095590481687

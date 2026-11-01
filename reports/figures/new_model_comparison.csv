@@ -1,0 +1,6 @@
+Model,Target,Features,Accuracy,Precision,Recall,F1
+VotingEnsemble_binary,gain>0 / gain<=0,"log_Issue_Size,log_Offer_Price,Year,Issue_Shares,Month",0.6429,0.5522,0.6429,0.5786
+VotingEnsemble_binary,gain>0 / gain<=0,"log_Issue_Size,log_Offer_Price,Year,Issue_Shares,Month",0.6429,0.5522,0.6429,0.5786
+VotingEnsemble_binary,gain>0 / gain<=0,"log_Issue_Size,log_Offer_Price,Year,Issue_Shares,Month",0.6429,0.5522,0.6429,0.5786
+VotingEnsemble_Phase2_binary,gain>0 / gain<=0,"log_Issue_Size,log_Offer_Price,Year,Issue_Shares,Month,Nifty_30d_return,Nifty_5d_return,Nifty_30d_volatility,Nifty_52w_dist,Nifty_Bull_Regime,Trailing_5_Avg_Gain,Trailing_30d_IPO_Count,Issue_Size_vs_Annual_Median",0.6476,0.5721,0.6476,0.5917
+VotingEnsemble_Phase2_binary,gain>0 / gain<=0,"log_Issue_Size,log_Offer_Price,Year,Issue_Shares,Month,Nifty_30d_return,Nifty_5d_return,Nifty_30d_volatility,Nifty_52w_dist,Nifty_Bull_Regime,Trailing_5_Avg_Gain,Trailing_30d_IPO_Count,Issue_Size_vs_Annual_Median",0.6333,0.5524,0.6333,0.5776

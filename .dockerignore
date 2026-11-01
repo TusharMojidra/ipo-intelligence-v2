@@ -1,0 +1,12 @@
+.git
+.pytest_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+data/app.db
+tests
+frontend/node_modules
+frontend_backup_v2
+.freebuff
