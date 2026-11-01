@@ -34,7 +34,6 @@ skills-lock.json
 
 # Node & Frontend build output
 node_modules/
-frontend/dist/
 frontend/node_modules/
 
 # Test / coverage / build output
