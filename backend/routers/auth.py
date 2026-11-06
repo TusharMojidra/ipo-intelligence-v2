@@ -285,7 +285,7 @@ async def google_oauth_callback(
         db.commit()
 
         token = create_access_token({"sub": user.email, "uid": user.id, "role": user.role})
-        response = RedirectResponse(url="/")
+        response = RedirectResponse(url=f"/?auth_token={token}")
         response.set_cookie(
             key="auth_token",
             value=token,
