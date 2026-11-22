@@ -9,27 +9,28 @@ export interface ModelVote {
 }
 
 export interface PredictionResult {
-  company_name: string;
-  direction: string;
+  company_name?: string;
+  direction?: string;
   hot_probability: number;
   expected_gain: number;
-  expected_median: number;
+  expected_median?: number;
   range_lower: number;
   range_upper: number;
-  predicted_range: string;
-  range_span: number;
-  verdict: string;
+  predicted_range?: string;
+  range_span?: number;
+  verdict?: string;
   verdict_badge: string;
   verdict_color: 'emerald' | 'cyan' | 'rose';
   action_advice: string;
-  models_breakdown: ModelVote[];
-  benchmarks: Record<string, number>;
-  corridor_10: [number, number];
-  corridor_15: [number, number];
+  models_breakdown?: ModelVote[];
+  benchmarks?: Record<string, number>;
+  corridor_10?: [number, number];
+  corridor_15?: [number, number];
   key_drivers: string[];
-  market_regime: string;
+  market_regime?: string;
   is_phase2_available?: boolean;
   phase2_notice?: string;
+  confidence?: number;
 }
 
 export interface UpcomingIPO {

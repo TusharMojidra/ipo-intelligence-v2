@@ -66,6 +66,15 @@ export const TAB_SECTIONS: Record<NavigationTab, ScaleSection[]> = {
       icon: <History className="w-3.5 h-3.5" />,
     },
   ],
+  history: [
+    {
+      id: 'history-section',
+      number: '01',
+      label: 'Records',
+      subtitle: 'Historical Debut Track Record',
+      icon: <History className="w-3.5 h-3.5" />,
+    },
+  ],
   guide: [
     {
       id: 'guide-overview',
@@ -157,6 +166,7 @@ export const SECTIONS: ScaleSection[] = TAB_SECTIONS.simulator;
 interface SideScaleProps {
   theme?: AppTheme;
   activeTab?: NavigationTab;
+  onNavigateTab?: (tab: NavigationTab) => void;
   isKnowMoreOpen?: boolean;
   onOpenDeepDive?: () => void;
 }

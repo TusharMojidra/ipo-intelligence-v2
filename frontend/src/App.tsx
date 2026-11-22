@@ -300,6 +300,8 @@ export default function App() {
         if (p1Res.ok) {
           const p1Data = await p1Res.json();
           setResult({
+            company_name: ipo.company_name,
+            direction: (p1Data.hot_probability ?? 50) >= 50 ? 'Positive' : 'Cautious',
             expected_gain: 0,
             range_lower: 0,
             range_upper: 0,
@@ -350,6 +352,9 @@ export default function App() {
       if (p1Res.ok) {
         const p1Data = await p1Res.json();
         setResult((prev) => ({
+          ...(prev || {}),
+          company_name: companyName,
+          direction: (p1Data.hot_probability ?? 50) >= 50 ? 'Positive' : 'Cautious',
           expected_gain: prev?.expected_gain ?? 0,
           range_lower: prev?.range_lower ?? 0,
           range_upper: prev?.range_upper ?? 0,

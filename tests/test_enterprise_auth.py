@@ -22,12 +22,14 @@ def client():
         yield c
 
 @pytest.fixture(autouse=True)
-def reset_rate_limits():
+def reset_rate_limits(client):
+    client.cookies.clear()
     _FAILED_ATTEMPTS.clear()
     _OTP_REQUESTS.clear()
     _RESET_REQUESTS.clear()
     _SIGNUP_ATTEMPTS.clear()
     yield
+    client.cookies.clear()
     _FAILED_ATTEMPTS.clear()
     _OTP_REQUESTS.clear()
     _RESET_REQUESTS.clear()

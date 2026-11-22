@@ -39,7 +39,7 @@ from src.companion_engine import query_groq_companion
 from backend.db import init_db, get_db
 from backend.routers.auth import router as auth_router
 from backend.routers.user_data import router as user_data_router
-from backend.security import get_optional_current_user
+from backend.security import get_optional_current_user, get_real_client_ip
 from backend.models import User, FeedbackSubmission
 from backend.schemas import FeedbackCreate, FeedbackResponse, ContactInfoResponse
 from backend.email_service import send_feedback_email
@@ -61,10 +61,19 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="IPO Intelligence Terminal API", version="2.0", lifespan=lifespan)
+ENV_MODE = os.getenv("ENVIRONMENT", "development").lower()
+is_prod = ENV_MODE == "production"
+
+app = FastAPI(
+    title="IPO Intelligence Terminal API",
+    version="2.0",
+    lifespan=lifespan,
+    docs_url=None if is_prod else "/docs",
+    redoc_url=None if is_prod else "/redoc",
+    openapi_url=None if is_prod else "/openapi.json"
+)
 
 # HTTP Security Headers & Content Security Policy (CSP) Middleware
-ENV_MODE = os.getenv("ENVIRONMENT", "development").lower()
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
@@ -873,7 +882,7 @@ def submit_feedback(req: FeedbackCreate, request: Request, db: Session = Depends
     Stores submission in database and routes inquiry to ipo.intelligence.app@gmail.com.
     Rate-limited per client IP.
     """
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = get_real_client_ip(request)
     now = time.time()
     recent = [t for t in _FEEDBACK_REQUESTS[client_ip] if now - t < 3600]
     if len(recent) >= _MAX_FEEDBACK_PER_HOUR:
@@ -960,7 +969,7 @@ def companion_chat(req: CompanionChatRequest, request: Request):
     AI Companion Guide powered by Groq with context injection and zero-fail local fallback.
     Protected against denial-of-service and budget exhaustion via sliding-window rate limiting.
     """
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = get_real_client_ip(request)
     now = time.time()
     _CHAT_REQUESTS[client_ip] = [t for t in _CHAT_REQUESTS[client_ip] if now - t < 60]
     if len(_CHAT_REQUESTS[client_ip]) >= _MAX_CHAT_PER_MINUTE:
@@ -977,36 +986,38 @@ def companion_chat(req: CompanionChatRequest, request: Request):
 @app.get("/robots.txt", response_class=PlainTextResponse)
 def robots_txt():
     """SEO Robots exclusion standard."""
-    return """User-agent: *
+    base_url = os.getenv("APP_BASE_URL", "https://ipo-intelligence-terminal.onrender.com").rstrip("/")
+    return f"""User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://ipo-intelligence.terminal/sitemap.xml
+Sitemap: {base_url}/sitemap.xml
 """
 
 
 @app.get("/sitemap.xml")
 def sitemap_xml():
     """Dynamic XML Sitemap for search engines."""
-    content = """<?xml version="1.0" encoding="UTF-8"?>
+    base_url = os.getenv("APP_BASE_URL", "https://ipo-intelligence-terminal.onrender.com").rstrip("/")
+    content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ipo-intelligence.terminal/</loc>
+    <loc>{base_url}/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ipo-intelligence.terminal/?tab=upcoming</loc>
+    <loc>{base_url}/?tab=upcoming</loc>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ipo-intelligence.terminal/?tab=trackrecord</loc>
+    <loc>{base_url}/?tab=trackrecord</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ipo-intelligence.terminal/?tab=guide</loc>
+    <loc>{base_url}/?tab=guide</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

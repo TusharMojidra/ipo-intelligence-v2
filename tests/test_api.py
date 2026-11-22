@@ -6,7 +6,8 @@ from backend.db import init_db
 # Ensure database tables and ML models are loaded before running tests
 @pytest.fixture(scope="module", autouse=True)
 def setup_models():
-    init_db()
+    from backend.db import Base, engine
+    Base.metadata.create_all(bind=engine)
     if "clf" not in STATE:
         initialize_models()
 
@@ -31,14 +32,14 @@ def test_api_status(client):
     # Authenticated status check gives full model metadata
     reg_res = client.post("/api/auth/register", json={
         "email": "status_admin_test@terminal.ai",
-        "password": "Password123!"
+        "password": "ValidPass#2026!"
     })
-    if reg_res.status_code == 200:
+    if reg_res.status_code in (200, 201):
         token = reg_res.json()["access_token"]
     else:
         login_res = client.post("/api/auth/login", json={
             "email": "status_admin_test@terminal.ai",
-            "password": "Password123!"
+            "password": "ValidPass#2026!"
         })
         token = login_res.json()["access_token"]
     auth_res = client.get("/api/status", headers={"Authorization": f"Bearer {token}"})
