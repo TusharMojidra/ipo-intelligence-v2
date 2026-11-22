@@ -339,12 +339,9 @@ export const AiCompanionWidget: React.FC<AiCompanionWidgetProps> = ({
                   <h4 className="text-xs font-bold text-white tracking-tight">
                     IPO AI Companion
                   </h4>
-                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold">
-                    Groq 120B
-                  </span>
                 </div>
                 <p className="text-[10px] text-zinc-400 font-mono">
-                  Full Terminal Knowledge • NSE / BSE ML Engine
+                  Terminal Assistant
                 </p>
               </div>
             </div>
@@ -454,10 +451,6 @@ export const AiCompanionWidget: React.FC<AiCompanionWidgetProps> = ({
 
           {/* Quick Prompt Suggestion Chips */}
           <div className="px-3 pt-2 pb-2.5 border-t border-[var(--border-card)] bg-[var(--surface-card-subtle)] flex items-center gap-1.5 overflow-x-auto visible-scrollbar-x">
-            <span className="text-[10px] font-mono text-zinc-500 shrink-0 flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-400" aria-hidden="true" />
-              Ask:
-            </span>
             {INITIAL_PROMPTS.map((prompt, idx) => (
               <button
                 key={idx}

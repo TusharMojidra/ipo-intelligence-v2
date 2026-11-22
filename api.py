@@ -12,7 +12,7 @@ os.environ.setdefault('OMP_NUM_THREADS', '1')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from fastapi import FastAPI, HTTPException, Request, Response, status, Depends
-from fastapi.responses import PlainTextResponse, FileResponse
+from fastapi.responses import PlainTextResponse, FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -63,7 +63,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="IPO Intelligence Terminal API", version="2.0", lifespan=lifespan)
 
-# HTTP Security Headers Middleware
+# HTTP Security Headers & Content Security Policy (CSP) Middleware
+ENV_MODE = os.getenv("ENVIRONMENT", "development").lower()
+
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
@@ -72,36 +74,81 @@ async def add_security_headers(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-    # Prevent token leakage via Referer header on cross-origin navigation
     response.headers["Cross-Origin-Embedder-Policy"] = "credentialless"
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
     response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
+
+    # HSTS in production (1 year preload)
+    if ENV_MODE == "production" or request.url.scheme == "https":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+
+    # Content Security Policy (allows self, Google OAuth, fonts, static assets, and blob workers)
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com; "
+        "worker-src 'self' blob:; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "img-src 'self' data: https: blob:; "
+        "connect-src 'self' https://accounts.google.com https://api.resend.com; "
+        "frame-src https://accounts.google.com; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self';"
+    )
     return response
 
-# Hardened CORS: Explicit trusted origins and regex for cloud deployment domains
+# Hardened CORS: Strict, explicit trusted origins (no broad cloud wildcard regex)
 raw_origins = os.getenv("ALLOWED_ORIGINS", "")
-cors_kwargs = {
-    "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    "allow_headers": ["*"],
-}
-
-if raw_origins and raw_origins.strip() == "*":
-    cors_kwargs["allow_origin_regex"] = r"https?://.*"
-    cors_kwargs["allow_credentials"] = True
-elif raw_origins:
-    cors_kwargs["allow_origins"] = [o.strip() for o in raw_origins.split(",") if o.strip()]
-    cors_kwargs["allow_credentials"] = True
+if raw_origins and raw_origins.strip() != "*":
+    TRUSTED_ORIGINS = [o.strip().rstrip("/") for o in raw_origins.split(",") if o.strip()]
 else:
-    cors_kwargs["allow_origins"] = [
+    TRUSTED_ORIGINS = [
+        "https://ipo-intelligence-terminal.onrender.com",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "http://localhost:3000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
+        "http://10.148.187.119:8000"
     ]
-    cors_kwargs["allow_origin_regex"] = r"https://.*\.onrender\.com"
-    cors_kwargs["allow_credentials"] = True
+
+# CSRF & Strict Origin Validation Middleware for Cookie-Authenticated Requests
+@app.middleware("http")
+async def csrf_origin_protection(request: Request, call_next):
+    # Enforce strict origin validation on state-changing API requests using session cookies
+    if request.method in ("POST", "PUT", "DELETE", "PATCH") and request.url.path.startswith("/api/"):
+        has_session_cookie = bool(request.cookies.get("ipo_session"))
+        if has_session_cookie:
+            origin = request.headers.get("origin")
+            referer = request.headers.get("referer")
+
+            # Check Origin first
+            if origin:
+                cleaned_origin = origin.rstrip("/")
+                if cleaned_origin not in TRUSTED_ORIGINS:
+                    return JSONResponse(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        content={"detail": "CSRF / Origin check failed: untrusted origin for cookie-authenticated request."}
+                    )
+            elif referer:
+                # Fallback to Referer check
+                matched = any(referer.startswith(trusted) for trusted in TRUSTED_ORIGINS)
+                if not matched:
+                    return JSONResponse(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        content={"detail": "CSRF / Referer check failed: untrusted referer for cookie-authenticated request."}
+                    )
+
+    return await call_next(request)
+
+cors_kwargs = {
+    "allow_origins": TRUSTED_ORIGINS,
+    "allow_methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "allow_headers": ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    "allow_credentials": True,
+}
 
 app.add_middleware(CORSMiddleware, **cors_kwargs)
 
@@ -376,8 +423,9 @@ def get_history():
     path = 'reports/figures/range_predictions.csv'
     if not os.path.exists(path):
         return []
-    df = pd.read_csv(path).tail(40)
-    return df.to_dict(orient='records')
+    df = pd.read_csv(path)
+    df = df.sort_values(by='Date', ascending=False)
+    return df.head(40).to_dict(orient='records')
 
 
 @app.get("/api/test/classification")

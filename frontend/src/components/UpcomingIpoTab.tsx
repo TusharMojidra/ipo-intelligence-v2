@@ -11,7 +11,8 @@ import { AppTheme } from './Header';
 import { useAuth } from '../context/AuthContext';
 
 interface UpcomingIpoTabProps {
-  onSelectUpcomingIpo: (ipo: UpcomingIPO) => void;
+  onSelectUpcomingIpo?: (ipo: UpcomingIPO) => void;
+  onSelectIpo?: (ipo: UpcomingIPO) => void;
   selectedIpoName?: string;
   theme?: AppTheme;
   onOpenGuide?: (id: string) => void;
@@ -19,10 +20,15 @@ interface UpcomingIpoTabProps {
 
 export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
   onSelectUpcomingIpo,
+  onSelectIpo,
   selectedIpoName,
   theme = 'midnight',
   onOpenGuide,
 }) => {
+  const handleSelect = (ipo: UpcomingIPO) => {
+    if (onSelectUpcomingIpo) onSelectUpcomingIpo(ipo);
+    if (onSelectIpo) onSelectIpo(ipo);
+  };
   const { isWatchlisted, toggleWatchlist } = useAuth();
   const [ipos, setIpos] = useState<UpcomingIPO[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -137,9 +143,6 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
               <div>
                 <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2 flex-wrap">
                   Upcoming IPO Pipeline
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full badge-accent font-semibold">
-                    Live Radar
-                  </span>
                   <InfoButton targetId="guide-upcoming" label="Radar Info" onOpenGuide={onOpenGuide} />
                 </h2>
                 <p className="text-xs text-zinc-400 mt-0.5">
@@ -151,9 +154,9 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
 
           <div className="flex items-center gap-3 self-start lg:self-auto">
             <div className="hidden sm:flex items-center gap-2 bg-[var(--canvas-bg)] px-3 py-1.5 rounded-xl border border-[var(--border-card)]">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 motion-safe:animate-ping" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               <span className="text-xs font-mono text-zinc-300">
-                {lastUpdated ? `Live Feed (${lastUpdated})` : 'Live Pipeline Active'}
+                {lastUpdated ? `Updated ${lastUpdated}` : 'Live'}
               </span>
             </div>
 
@@ -164,7 +167,7 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
               title="Rescan Public Feeds & DRHP Filings"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'motion-safe:animate-spin' : ''}`} aria-hidden="true" />
-              <span>{refreshing ? 'Scanning...' : 'Rescan Feeds'}</span>
+              <span>{refreshing ? 'Scanning...' : 'Refresh'}</span>
             </button>
           </div>
         </div>
@@ -176,7 +179,7 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
               <Layers className="w-3.5 h-3.5 text-[var(--accent-primary)]" aria-hidden="true" /> Total in Pipeline
             </span>
             <p className="text-xl font-bold font-mono text-white mt-1">
-              {ipos.length} <span className="text-xs font-normal text-zinc-400">Offerings</span>
+              {ipos.length}
             </p>
           </div>
 
@@ -185,7 +188,7 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" /> Bidding Open Now
             </span>
             <p className="text-xl font-bold font-mono text-emerald-400 mt-1">
-              {biddingOpenCount} <span className="text-xs font-normal text-zinc-400">Live</span>
+              {biddingOpenCount}
             </p>
           </div>
 
@@ -194,7 +197,7 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
               <Sparkles className="w-3.5 h-3.5 text-amber-400" aria-hidden="true" /> Awaiting Listing
             </span>
             <p className="text-xl font-bold font-mono text-amber-300 mt-1">
-              {biddingClosedCount} <span className="text-xs font-normal text-zinc-400">Closed</span>
+              {biddingClosedCount}
             </p>
           </div>
 
@@ -203,7 +206,7 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
               <Clock className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" /> Upcoming Pipeline
             </span>
             <p className="text-xl font-bold font-mono text-sky-300 mt-1">
-              {upcomingScheduledCount} <span className="text-xs font-normal text-zinc-400">Forthcoming</span>
+              {upcomingScheduledCount}
             </p>
           </div>
         </div>
@@ -348,8 +351,8 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
                     {ipo.predicted_gain !== undefined && (
                       <div className="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-transparent border border-emerald-500/30 flex items-center justify-between mb-3">
                         <div>
-                          <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1 uppercase tracking-wider">
-                            <Sparkles className="w-3.5 h-3.5 text-amber-300" aria-hidden="true" /> Model Expected Gain
+                          <span className="text-[10px] font-bold text-emerald-400 block uppercase tracking-wider">
+                            Expected Gain
                           </span>
                           <span className={`text-base font-black font-mono ${ipo.predicted_gain >= 0 ? 'text-emerald-300' : 'text-rose-400'}`}>
                             {ipo.predicted_gain >= 0 ? `+${ipo.predicted_gain}%` : `${ipo.predicted_gain}%`}
@@ -357,7 +360,7 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
                         </div>
                         {ipo.predicted_range && (
                           <div className="text-right">
-                            <span className="text-[10px] text-zinc-400 block font-medium">80% Expected Range</span>
+                            <span className="text-[10px] text-zinc-400 block font-medium">Expected Range</span>
                             <span className="text-xs font-mono font-bold text-white">
                               {ipo.predicted_range}
                             </span>
@@ -387,7 +390,8 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
                   {/* Action Button: Predict IPO */}
                   <div className="pt-2">
                     <button
-                      onClick={() => onSelectUpcomingIpo(ipo)}
+                      type="button"
+                      onClick={() => handleSelect(ipo)}
                       className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold text-white transition-colors duration-200 shadow-md cursor-pointer btn-accent active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none"
                       title={ipo.qib && ipo.total ? "Run Full Phase 1 Pre-IPO & Phase 2 Listing Gain Prediction" : "Run Phase 1 Pre-IPO Prediction"}
                     >
@@ -395,11 +399,6 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
                       <span>{ipo.qib && ipo.total ? "Predict (Phase 1 & 2)" : "Predict Pre-IPO Heat"}</span>
                       <ArrowRight className="w-3.5 h-3.5 motion-safe:transition-transform motion-safe:group-hover:translate-x-0.5" aria-hidden="true" />
                     </button>
-                    <p className="text-[10px] text-center text-zinc-400 mt-1.5">
-                      {ipo.qib && ipo.total
-                        ? "⚡ Calculates Pre-IPO Heat & Listing Gain Corridor"
-                        : "⚡ Predicts Pre-IPO Profit Check (Phase 2 Locked Pending Book)"}
-                    </p>
                   </div>
                 </div>
               );
@@ -414,11 +413,6 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
                   Showing <strong className="text-white font-semibold">{visibleIpos.length}</strong> of{' '}
                   <strong className="text-white font-semibold">{filteredIpos.length}</strong> upcoming offerings
                 </span>
-                {isExpanded && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-semibold">
-                    Full Pipeline Unwrapped
-                  </span>
-                )}
               </div>
 
               <button
@@ -437,26 +431,18 @@ export const UpcomingIpoTab: React.FC<UpcomingIpoTabProps> = ({
                 {isExpanded ? (
                   <>
                     <ChevronUp className="w-4 h-4 text-sky-400 motion-safe:transition-transform motion-safe:group-hover:-translate-y-0.5" aria-hidden="true" />
-                    <span>Show Less (Wrap Back to Top 9)</span>
+                    <span>Show Less</span>
                   </>
                 ) : (
                   <>
                     <Layers className="w-4 h-4 text-sky-400" aria-hidden="true" />
-                    <span>View More ({remainingCount} More Upcoming IPOs)</span>
+                    <span>View More ({remainingCount} More)</span>
                     <ChevronDown className="w-4 h-4 text-sky-400 motion-safe:transition-transform motion-safe:group-hover:translate-y-0.5" aria-hidden="true" />
                   </>
                 )}
               </button>
             </div>
-          ) : (
-            filteredIpos.length > 0 && (
-              <div className="text-center pt-2">
-                <p className="text-[11px] font-mono text-zinc-500">
-                  Showing all {filteredIpos.length} matching upcoming offerings
-                </p>
-              </div>
-            )
-          )}
+          ) : null}
         </div>
       )}
     </section>

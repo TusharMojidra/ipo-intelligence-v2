@@ -5,6 +5,7 @@ interface ListingDialGaugeProps {
   rangeLower: number;
   rangeUpper: number;
   verdictColor: 'emerald' | 'cyan' | 'rose';
+  isRefreshing?: boolean;
 }
 
 export const ListingDialGauge: React.FC<ListingDialGaugeProps> = ({
@@ -12,6 +13,7 @@ export const ListingDialGauge: React.FC<ListingDialGaugeProps> = ({
   rangeLower,
   rangeUpper,
   verdictColor,
+  isRefreshing = false,
 }) => {
   // Map value from -20% to +100% to -90deg to +90deg
   const minVal = -20;
@@ -23,7 +25,9 @@ export const ListingDialGauge: React.FC<ListingDialGaugeProps> = ({
     return -90 + fraction * 180;
   };
 
-  const needleAngle = valToAngle(expectedGain);
+  const targetAngle = valToAngle(expectedGain);
+  // When refreshing, dip needle slightly to start position to produce a dynamic sweep upon completion
+  const needleAngle = isRefreshing ? -90 : targetAngle;
 
   // SVG Geometry for 240x135 viewbox
   const cx = 120;
@@ -134,9 +138,6 @@ export const ListingDialGauge: React.FC<ListingDialGaugeProps> = ({
             {expectedGain >= 0 ? '+' : ''}{expectedGain.toFixed(1)}%
           </span>
         </div>
-        <span className="text-[11px] font-mono text-zinc-400 block -mt-0.5">
-          Expected Listing Day Gain
-        </span>
       </div>
     </div>
   );

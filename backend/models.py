@@ -21,14 +21,71 @@ class User(Base):
     is_verified = Column(Boolean, default=False, nullable=False)
     phone_verified = Column(Boolean, default=False, nullable=False)
     role = Column(String(50), default="user", nullable=False)
+    failed_login_attempts = Column(Integer, default=0, nullable=False)
+    locked_until = Column(DateTime(timezone=True), nullable=True)
+    password_changed_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
     updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     watchlist_items = relationship("UserWatchlist", back_populates="user", cascade="all, delete-orphan")
     simulations = relationship("SavedSimulation", back_populates="user", cascade="all, delete-orphan")
+    sessions = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
+    verification_tokens = relationship("EmailVerificationToken", back_populates="user", cascade="all, delete-orphan")
+    reset_tokens = relationship("PasswordResetToken", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User {self.email}>"
+
+
+class EmailVerificationToken(Base):
+    __tablename__ = "email_verification_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token_hash = Column(String(64), index=True, nullable=False)  # SHA-256 hash of token
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    is_used = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+    user = relationship("User", back_populates="verification_tokens")
+
+    def __repr__(self):
+        return f"<EmailVerificationToken user={self.user_id} used={self.is_used}>"
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token_hash = Column(String(64), index=True, nullable=False)  # SHA-256 hash of token
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    is_used = Column(Boolean, default=False, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+    user = relationship("User", back_populates="reset_tokens")
+
+    def __repr__(self):
+        return f"<PasswordResetToken user={self.user_id} used={self.is_used}>"
+
+
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_token_hash = Column(String(64), unique=True, index=True, nullable=False)  # SHA-256
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    ip_address = Column(String(100), nullable=True)
+    user_agent = Column(String(255), nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    is_revoked = Column(Boolean, default=False, nullable=False)
+    last_active_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, nullable=False)
+
+    user = relationship("User", back_populates="sessions")
+
+    def __repr__(self):
+        return f"<UserSession id={self.id} user={self.user_id} revoked={self.is_revoked}>"
 
 
 class OtpVerification(Base):
@@ -112,4 +169,3 @@ class FeedbackSubmission(Base):
 
     def __repr__(self):
         return f"<FeedbackSubmission {self.feedback_id} from {self.email} ({self.category})>"
-

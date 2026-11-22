@@ -11,6 +11,7 @@ env/
 # Local secrets / config / databases
 .env
 .env.*
+!.env.example
 *.pem
 *.db
 data/*.db
@@ -41,8 +42,9 @@ frontend/node_modules/
 .coverage
 htmlcov/
 build/
-dist/
+/dist/
 *.egg-info/
+!frontend/dist/
 
 # Streamlit runtime state
 .streamlit/secrets.toml

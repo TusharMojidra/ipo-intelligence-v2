@@ -14,6 +14,24 @@ services:
       - key: JWT_ALGORITHM
         value: HS256
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
-        value: "10080"
-      - key: DEV_OTP_MODE
-        value: "true"
+        value: "1440"
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        value: "IPO Intelligence Terminal <onboarding@resend.dev>"
+      - key: APP_BASE_URL
+        value: "https://ipo-intelligence-terminal.onrender.com"
+      - key: ALLOWED_ORIGINS
+        value: "https://ipo-intelligence-terminal.onrender.com"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        value: "https://ipo-intelligence-terminal.onrender.com/api/auth/google/callback"
+      - key: GROQ_API_KEY
+        sync: false

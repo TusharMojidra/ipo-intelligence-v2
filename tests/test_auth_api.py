@@ -6,6 +6,7 @@ from sqlalchemy.pool import StaticPool
 
 from api import app, initialize_models, STATE
 from backend.db import Base, get_db
+from backend.models import User
 
 # Isolated test DB with StaticPool to keep in-memory SQLite persistent across threads/sessions
 TEST_DB_URL = "sqlite:///:memory:"
@@ -39,7 +40,7 @@ def client():
 
 def test_user_registration_and_login_flow(client):
     email = "trader_test@terminal.ai"
-    password = "SuperSecurePassword123"
+    password = "SuperSecurePassword123!"
 
     # 1. Register
     reg_res = client.post("/api/auth/register", json={
@@ -84,18 +85,37 @@ def test_user_registration_and_login_flow(client):
     assert me_res.status_code == 200
     assert me_res.json()["email"] == email
 
-    # 6. Access /api/auth/me without token -> 401
+    # 6. Access /api/auth/me without token -> 200 with null payload (prevents console 401 errors for guests)
+    client.cookies.clear()
     anon_res = client.get("/api/auth/me")
-    assert anon_res.status_code == 401
+    assert anon_res.status_code == 200
+    assert anon_res.json() is None
 
 def test_user_watchlist_flow(client):
     email = "watchuser@terminal.ai"
-    password = "Password12345"
+    password = "Password12345!"
     reg = client.post("/api/auth/register", json={"email": email, "password": password})
+    assert reg.status_code == 201
     token = reg.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # Add to watchlist
+    # 1. Unverified user should receive 403 Forbidden
+    unverified_res = client.post("/api/user/watchlist", headers=headers, json={
+        "company_name": "Bajaj Housing Finance",
+        "symbol": "BAJAJHFL"
+    })
+    assert unverified_res.status_code == 403
+    assert "Email verification required" in unverified_res.json()["detail"]
+
+    # 2. Verify user in database
+    db = TestingSessionLocal()
+    user = db.query(User).filter(User.email == email).first()
+    assert user is not None
+    user.is_verified = True
+    db.commit()
+    db.close()
+
+    # 3. Verified user successfully adds to watchlist
     add_res = client.post("/api/user/watchlist", headers=headers, json={
         "company_name": "Bajaj Housing Finance",
         "symbol": "BAJAJHFL"
@@ -120,12 +140,29 @@ def test_user_watchlist_flow(client):
 
 def test_user_simulation_vault_flow(client):
     email = "simuser@terminal.ai"
-    password = "Password12345"
+    password = "Password12345!"
     reg = client.post("/api/auth/register", json={"email": email, "password": password})
+    assert reg.status_code == 201
     token = reg.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # Save simulation
+    # 1. Unverified user should receive 403 Forbidden
+    unverified_res = client.post("/api/user/simulations", headers=headers, json={
+        "title": "High GMP Tech Unicorn",
+        "inputs": {"gmp": 75.0, "qib": 120.0},
+        "results": {"expected_gain": 58.4, "direction": "Positive"}
+    })
+    assert unverified_res.status_code == 403
+
+    # 2. Verify user in database
+    db = TestingSessionLocal()
+    user = db.query(User).filter(User.email == email).first()
+    assert user is not None
+    user.is_verified = True
+    db.commit()
+    db.close()
+
+    # 3. Verified user successfully saves simulation
     save_res = client.post("/api/user/simulations", headers=headers, json={
         "title": "High GMP Tech Unicorn",
         "inputs": {"gmp": 75.0, "qib": 120.0},
@@ -149,17 +186,33 @@ def test_user_simulation_vault_flow(client):
     # Verify empty
     assert len(client.get("/api/user/simulations", headers=headers).json()) == 0
 
-def test_google_authentication_flow(client):
-    # 1. First time Google login -> auto-create profile
+def test_google_authentication_flow(client, monkeypatch):
+    # 1. Invalid or tampered token is rejected with 401
+    bad_res = client.post("/api/auth/google", json={
+        "credential": "invalid_tampered_token",
+        "client_id": "test_client_id"
+    })
+    assert bad_res.status_code == 401
+    assert "Invalid, expired, tampered" in bad_res.json()["detail"]
+
+    # 2. Valid token with mocked verification succeeds
     google_email = "new_investor@gmail.com"
+    mock_claims = {
+        "iss": "accounts.google.com",
+        "aud": "test_client_id",
+        "sub": "google-oauth2-1082348912",
+        "email": google_email,
+        "name": "Arjun Mehta",
+        "picture": "https://lh3.googleusercontent.com/a/mock_avatar",
+        "email_verified": True
+    }
+
+    import backend.routers.auth as auth_mod
+    monkeypatch.setattr(auth_mod, "parse_google_credential", lambda cred, cid=None: mock_claims)
+
     res1 = client.post("/api/auth/google", json={
-        "credential": "mock_google_jwt_token",
-        "user_info": {
-            "email": google_email,
-            "name": "Arjun Mehta",
-            "sub": "google-oauth2-1082348912",
-            "picture": "https://lh3.googleusercontent.com/a/mock_avatar"
-        }
+        "credential": "valid_mock_token",
+        "client_id": "test_client_id"
     })
     assert res1.status_code == 200
     data1 = res1.json()
@@ -169,61 +222,11 @@ def test_google_authentication_flow(client):
     assert data1["user"]["auth_provider"] == "google"
     assert data1["user"]["is_verified"] is True
 
-    # 2. Subsequent Google login -> seamlessly returns token for existing user
+    # 3. Subsequent Google login seamlessly returns token for existing user
     res2 = client.post("/api/auth/google", json={
-        "credential": "mock_google_jwt_token",
-        "user_info": {
-            "email": google_email,
-            "name": "Arjun Mehta",
-            "sub": "google-oauth2-1082348912",
-            "picture": "https://lh3.googleusercontent.com/a/mock_avatar"
-        }
+        "credential": "valid_mock_token",
+        "client_id": "test_client_id"
     })
     assert res2.status_code == 200
     assert res2.json()["user"]["id"] == data1["user"]["id"]
 
-def test_mobile_registration_and_otp_flow(client):
-    mobile = "+91 98765 43210"
-    email = "mobile_user@terminal.ai"
-    password = "MobilePassword123"
-
-    # 1. Send OTP for mobile number
-    otp_req = client.post("/api/auth/send-otp", json={
-        "target": mobile,
-        "purpose": "login"
-    })
-    assert otp_req.status_code == 200
-    otp_data = otp_req.json()
-    assert "dev_otp" in otp_data
-    dev_code = otp_data["dev_otp"]
-
-    # 2. Verify OTP and login / create profile
-    verify_res = client.post("/api/auth/verify-otp", json={
-        "target": mobile,
-        "otp_code": dev_code,
-        "purpose": "login",
-        "full_name": "Priya Sharma"
-    })
-    assert verify_res.status_code == 200
-    v_data = verify_res.json()
-    assert "access_token" in v_data
-    assert v_data["user"]["phone_number"] == "9876543210"
-    assert v_data["user"]["phone_verified"] is True
-
-    # 3. Register user with mobile and password
-    reg_res = client.post("/api/auth/register", json={
-        "email": email,
-        "phone_number": "9123456780",
-        "password": password,
-        "full_name": "Rohan Deshmukh"
-    })
-    assert reg_res.status_code == 201
-    assert reg_res.json()["user"]["phone_number"] == "9123456780"
-
-    # 4. Login using Mobile Number instead of Email
-    login_phone_res = client.post("/api/auth/login", json={
-        "identifier": "9123456780",
-        "password": password
-    })
-    assert login_phone_res.status_code == 200
-    assert login_phone_res.json()["user"]["email"] == email

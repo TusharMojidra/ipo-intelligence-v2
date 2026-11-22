@@ -72,17 +72,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           <div className="w-full h-full rounded-2xl border border-[var(--border-card)] bg-[var(--surface-card-subtle)]/60 backdrop-blur-sm shadow-2xl overflow-hidden relative group">
             {/* Isolated Three.js Canvas */}
             <Hero3DVisual theme={theme} />
-
-            {/* Non-obtrusive 3D Telemetry Badge */}
-            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-[var(--surface-card-subtle)]/85 border border-[var(--border-card)] text-[10px] font-mono text-zinc-300 flex items-center gap-1.5 backdrop-blur-md pointer-events-none">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 motion-safe:animate-ping" />
-              <span>3D Live Listing Stage</span>
-            </div>
-
-            {/* Stage Footer Hint */}
-            <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-[var(--surface-card-subtle)]/85 border border-[var(--border-card)] text-[10px] font-mono text-zinc-400 flex items-center gap-2 backdrop-blur-md pointer-events-none">
-              <span className="text-emerald-400 font-bold">+38.2%</span> Expected Gain Range
-            </div>
           </div>
         </div>
       </div>

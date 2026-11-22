@@ -537,9 +537,6 @@ Date: ${currentDate} | Terminal Version: 2.0 (Offline Quant Engine)
                 <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
                   One-Page IPO Analysis Report
                 </h3>
-                <p className="text-[10px] sm:text-[11px] text-zinc-400">
-                  1-Page Summary • Instant Offline Report
-                </p>
               </div>
             </div>
 
@@ -613,9 +610,6 @@ Date: ${currentDate} | Terminal Version: 2.0 (Offline Quant Engine)
               <span className="text-xs font-mono text-zinc-400 flex items-center sm:justify-end gap-1.5">
                 <Calendar className="w-3.5 h-3.5" aria-hidden="true" /> {currentDate}
               </span>
-              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-bold inline-block mt-1">
-                Offline Data Engine
-              </span>
             </div>
           </div>
 
@@ -626,7 +620,6 @@ Date: ${currentDate} | Terminal Version: 2.0 (Offline Quant Engine)
               <span className="text-xl font-black text-emerald-400">
                 {expectedGain >= 0 ? '+' : ''}{expectedGain}%
               </span>
-              <span className="text-[10px] text-zinc-500 block mt-0.5">Most Likely Debut Gain</span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
@@ -634,7 +627,6 @@ Date: ${currentDate} | Terminal Version: 2.0 (Offline Quant Engine)
               <span className="text-xl font-black text-white">
                 +{rangeLower}% to +{rangeUpper}%
               </span>
-              <span className="text-[10px] text-zinc-500 block mt-0.5">Gain Range Band</span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-white/5 border border-white/10">
@@ -650,7 +642,6 @@ Date: ${currentDate} | Terminal Version: 2.0 (Offline Quant Engine)
               <span className="text-xl font-black text-emerald-300">
                 ₹{minPrice} to ₹{maxPrice}
               </span>
-              <span className="text-[10px] text-zinc-500 block mt-0.5">Estimated Price Band</span>
             </div>
           </div>
 

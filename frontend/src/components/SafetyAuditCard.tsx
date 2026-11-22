@@ -27,28 +27,6 @@ export const SafetyAuditCard: React.FC<SafetyAuditCardProps> = ({
     return <Info className="w-4 h-4 text-sky-400 shrink-0" aria-hidden="true" />;
   };
 
-  const getStatusBadge = (status: 'safe' | 'caution' | 'neutral') => {
-    if (status === 'safe') {
-      return (
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
-          Healthy
-        </span>
-      );
-    }
-    if (status === 'caution') {
-      return (
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-amber-500/10 text-amber-400 border border-amber-500/25">
-          Caution Flag
-        </span>
-      );
-    }
-    return (
-      <span className="text-[10px] font-mono px-2 py-0.5 rounded font-bold bg-sky-500/10 text-sky-300 border border-sky-500/25">
-        Balanced
-      </span>
-    );
-  };
-
   return (
     <div id="safety-audit-card" className="terminal-card p-5 space-y-4 transition-colors duration-300">
       {/* Top Header */}
@@ -62,9 +40,6 @@ export const SafetyAuditCard: React.FC<SafetyAuditCardProps> = ({
               <h3 className="text-base font-bold text-white tracking-tight">
                 Automated Red Flag & Safety Audit
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-300 font-semibold">
-                Automated Risk & Safety Check
-              </span>
             </div>
             <p className="text-[11px] text-zinc-400 mt-0.5">
               Checks on founder cash-out, big investor safety buffers, IPO scale, and market trend.
@@ -116,13 +91,12 @@ export const SafetyAuditCard: React.FC<SafetyAuditCardProps> = ({
                   : 'bg-[var(--canvas-bg)] border-[var(--border-card)] hover:border-sky-500/30'
               }`}
             >
-              {/* Header: Title + Badge */}
+              {/* Header: Title */}
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-zinc-400 flex items-center gap-1.5">
                   {getStatusIcon(check.status)}
                   {check.title}
                 </span>
-                {getStatusBadge(check.status)}
               </div>
 
               {/* Headline & Explanation */}

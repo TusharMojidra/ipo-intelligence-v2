@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeftRight, TrendingUp, UserMinus, ShieldCheck, AlertCircle, Info } from 'lucide-react';
+import { ArrowLeftRight, TrendingUp, UserMinus } from 'lucide-react';
 import { InfoButton } from './InfoButton';
 
 interface CapitalFlowCardProps {
@@ -46,9 +46,6 @@ export const CapitalFlowCard: React.FC<CapitalFlowCardProps> = ({
     onChangeSplit(newFresh, newOfs);
   };
 
-  const isGrowthDominant = freshPct >= 60;
-  const isHeavyCashout = ofsPct >= 70;
-
   return (
     <div id="capital-flow-card" className="terminal-card p-5 space-y-4 transition-colors duration-300">
       {/* Header */}
@@ -62,9 +59,6 @@ export const CapitalFlowCard: React.FC<CapitalFlowCardProps> = ({
               <h3 className="text-base font-bold text-white tracking-tight">
                 Capital Flow: Fresh Issue vs. Offer for Sale (OFS)
               </h3>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-zinc-300 font-semibold">
-                Capital Usage Breakdown
-              </span>
             </div>
             <p className="text-[11px] text-zinc-400 mt-0.5">
               See how much money enters the company for growth vs. founders and investors taking cash out.
@@ -73,22 +67,6 @@ export const CapitalFlowCard: React.FC<CapitalFlowCardProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {isGrowthDominant ? (
-            <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-bold flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
-              Company Growth Capital
-            </span>
-          ) : isHeavyCashout ? (
-            <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-400 font-bold flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
-              Heavy Founder Cash-Out
-            </span>
-          ) : (
-            <span className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/25 text-sky-300 font-bold flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5" aria-hidden="true" />
-              Balanced 50/50 Split
-            </span>
-          )}
           <InfoButton targetId="guide-capital-flow" label="Capital Flow Guide" onOpenGuide={onOpenGuide} />
         </div>
       </div>
@@ -116,14 +94,14 @@ export const CapitalFlowCard: React.FC<CapitalFlowCardProps> = ({
             style={{ width: `${Math.max(5, Math.min(95, freshPct))}%` }}
             title={`Fresh Issue: ₹${freshIssue.toLocaleString()} Cr (${freshPct}%)`}
           >
-            {freshPct >= 15 ? `${freshPct}% FRESH` : ''}
+            {freshPct >= 15 ? `${freshPct}%` : ''}
           </div>
           <div
             className="h-full rounded-lg bg-gradient-to-r from-amber-500 to-rose-500 flex items-center justify-center text-[10px] font-mono font-black text-black"
             style={{ width: `${Math.max(5, Math.min(95, ofsPct))}%` }}
             title={`Offer for Sale: ₹${ofs.toLocaleString()} Cr (${ofsPct}%)`}
           >
-            {ofsPct >= 15 ? `${ofsPct}% OFS` : ''}
+            {ofsPct >= 15 ? `${ofsPct}%` : ''}
           </div>
         </div>
       </div>
@@ -149,14 +127,13 @@ export const CapitalFlowCard: React.FC<CapitalFlowCardProps> = ({
         />
 
         <div className="flex justify-between text-[10px] font-mono text-zinc-500">
-          <span>0% OFS (100% Fresh Growth)</span>
-          <span>50% / 50% Split</span>
-          <span>100% OFS (Pure Promoter Exit)</span>
+          <span>0%</span>
+          <span>50%</span>
+          <span>100%</span>
         </div>
 
         {/* Quick Presets */}
         <div className="flex items-center gap-2 pt-1 flex-wrap">
-          <span className="text-[10px] font-mono text-zinc-400 shrink-0">Presets:</span>
           <button
             type="button"
             onClick={() => setPreset(1.0)}
@@ -222,7 +199,7 @@ export const CapitalFlowCard: React.FC<CapitalFlowCardProps> = ({
           </p>
           <div className="pt-2 border-t border-emerald-500/15 flex justify-between text-[10px] font-mono text-zinc-400">
             <span>Balance Sheet Impact:</span>
-            <span className="text-emerald-300 font-bold">100% Value Accretive</span>
+            <span className="text-emerald-300 font-bold">Accretive to company cash</span>
           </div>
         </div>
 
@@ -242,7 +219,7 @@ export const CapitalFlowCard: React.FC<CapitalFlowCardProps> = ({
           </p>
           <div className="pt-2 border-t border-amber-500/15 flex justify-between text-[10px] font-mono text-zinc-400">
             <span>Company Retention:</span>
-            <span className="text-amber-300 font-bold">₹0 Cr (Pure Liquidity)</span>
+            <span className="text-amber-300 font-bold">₹0 Cr (Exiting shareholder liquidity)</span>
           </div>
         </div>
       </div>

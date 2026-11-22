@@ -1,6 +1,9 @@
 import os
-from sqlalchemy import create_engine
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import declarative_base, sessionmaker
+
+load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/app.db")
 
@@ -39,25 +42,25 @@ def init_db():
     import backend.models  # Ensure models are imported before create_all
     Base.metadata.create_all(bind=engine)
 
-    # Safe migration for existing SQLite database files
-    if "sqlite" in DATABASE_URL:
+    # Safe dynamic column migrations across both PostgreSQL and SQLite
+    with engine.begin() as conn:
         try:
-            with engine.connect() as conn:
-                cursor = conn.connection.cursor()
-                cursor.execute("PRAGMA table_info(users)")
-                existing_cols = {row[1] for row in cursor.fetchall()}
+            inspector = inspect(conn)
+            existing_cols = {c["name"] for c in inspector.get_columns("users")}
 
-                new_columns = [
-                    ("phone_number", "VARCHAR(30)"),
-                    ("avatar_url", "VARCHAR(500)"),
-                    ("auth_provider", "VARCHAR(50) DEFAULT 'local'"),
-                    ("google_id", "VARCHAR(255)"),
-                    ("phone_verified", "BOOLEAN DEFAULT 0"),
-                ]
+            columns_to_add = [
+                ("phone_number", "VARCHAR(30)"),
+                ("avatar_url", "VARCHAR(500)"),
+                ("auth_provider", "VARCHAR(50) DEFAULT 'local'"),
+                ("google_id", "VARCHAR(255)"),
+                ("phone_verified", "BOOLEAN DEFAULT FALSE" if "postgres" in DATABASE_URL else "BOOLEAN DEFAULT 0"),
+                ("failed_login_attempts", "INTEGER DEFAULT 0"),
+                ("locked_until", "TIMESTAMP WITH TIME ZONE" if "postgres" in DATABASE_URL else "DATETIME"),
+                ("password_changed_at", "TIMESTAMP WITH TIME ZONE" if "postgres" in DATABASE_URL else "DATETIME"),
+            ]
 
-                for col_name, col_def in new_columns:
-                    if col_name not in existing_cols:
-                        cursor.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_def}")
-                conn.connection.commit()
-        except Exception:
-            pass
+            for col_name, col_def in columns_to_add:
+                if col_name not in existing_cols:
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_def}"))
+        except Exception as e:
+            print(f"Migration note: {e}")

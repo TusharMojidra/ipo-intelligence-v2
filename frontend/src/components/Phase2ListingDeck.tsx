@@ -56,6 +56,9 @@ export const Phase2ListingDeck: React.FC<Phase2ListingDeckProps> = ({
   onOpenGuide,
   isSparkling = false,
 }) => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
+
   const selectedReal = REAL_IPOS.find(
     (x) => x.name.toLowerCase() === companyName.toLowerCase()
   );
@@ -67,58 +70,78 @@ export const Phase2ListingDeck: React.FC<Phase2ListingDeckProps> = ({
   const minPrice = Math.max(1, Math.round(offerPrice * (1 + (rangeLower ?? 0) / 100)));
   const maxPrice = Math.max(1, Math.round(offerPrice * (1 + (rangeUpper ?? 0) / 100)));
 
-  const applyScenario = (newQib: number, newHni: number, newRii: number) => {
-    setQib(newQib);
-    setHni(newHni);
-    setRii(newRii);
-    const approxTotal = Math.round((newQib * 0.5 + newHni * 0.15 + newRii * 0.35) * 10) / 10;
-    setTotal(approxTotal);
-    onRunPhase2({
-      qib: newQib,
-      hni: newHni,
-      rii: newRii,
-      total: approxTotal,
-    });
-  };
-
   const handleRunPhase2 = () => {
+    setIsRefreshing(true);
     onRunPhase2();
+
     // Smoothly scroll down to Phase 2 result card on mobile and stacked layouts
     setTimeout(() => {
       const el = document.getElementById('phase2-result-deck');
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-    }, 120);
+    }, 100);
+
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    }, 800);
   };
 
 
   return (
     <section id="phase2-section" className="space-y-8 pt-6 scroll-mt-24">
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-card)] pb-5">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl badge-accent flex items-center justify-center font-bold shrink-0">
-            <TrendingUp className="w-5 h-5 text-[var(--accent-primary)]" aria-hidden="true" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                Phase 2: Expected listing gain and price range predictor
-              </h2>
-              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full badge-accent font-semibold">
-                Demand-driven price range
-              </span>
-              <InfoButton targetId="guide-phase2" label="How Phase 2 Works" onOpenGuide={onOpenGuide} />
-            </div>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-              Evaluates final institutional & retail subscription numbers: <strong>"What is the realistic listing profit & price range?"</strong>
-            </p>
-          </div>
-        </div>
+      {/* Section Header Landmark Banner */}
+      <div className="relative overflow-hidden rounded-2xl border border-sky-500/25 bg-gradient-to-r from-sky-950/40 via-[var(--surface-card)] to-[var(--surface-card)] p-5 sm:p-6 shadow-xl backdrop-blur-md">
+        {/* Ambient Top Glow Line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-sky-400 via-indigo-500 to-transparent" />
+        
+        {/* Subtle background animated particle or radial glow */}
+        <div className="absolute -top-12 -left-12 w-48 h-48 bg-sky-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
 
-        <div className="text-xs font-mono text-zinc-400 shrink-0 bg-[var(--surface-card)] px-3 py-1.5 rounded-xl border border-[var(--border-card)]">
-          Target: <strong className="text-white">{companyName}</strong> (Offer Price: ₹{offerPrice})
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="flex items-start gap-4">
+            {/* Animated Luminous Icon Badge */}
+            <div className="relative shrink-0 mt-0.5">
+              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-500 opacity-60 blur-sm animate-pulse" />
+              <div className="relative w-12 h-12 rounded-xl bg-slate-900 border border-sky-400/30 flex items-center justify-center text-sky-400 shadow-lg">
+                <TrendingUp className="w-6 h-6 text-sky-400" aria-hidden="true" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {/* Eyebrow & Info Button */}
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-sky-500/15 text-sky-300 border border-sky-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-ping" />
+                  Phase 02 Forecaster
+                </span>
+                <InfoButton targetId="guide-phase2" label="How Phase 2 Works" onOpenGuide={onOpenGuide} />
+              </div>
+
+              {/* Major Section Heading */}
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-snug">
+                Phase 2: Expected Listing Gain & Price Range Predictor
+              </h2>
+
+              {/* Subtitle / Objective Question */}
+              <p className="text-xs sm:text-sm text-zinc-300 max-w-2xl leading-relaxed">
+                Evaluates final institutional & retail subscription numbers: <span className="text-sky-300 font-semibold">"What is the realistic listing profit & price range?"</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Target Chip */}
+          <div className="shrink-0 flex sm:self-auto self-start">
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/90 border border-sky-500/25 shadow-md">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <div className="text-xs font-mono">
+                <span className="text-zinc-400">Target: </span>
+                <strong className="text-white font-bold">{companyName}</strong>
+                <span className="text-zinc-400 ml-1.5 font-normal">(Offer: ₹{offerPrice})</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -186,11 +209,9 @@ export const Phase2ListingDeck: React.FC<Phase2ListingDeckProps> = ({
         <div className="lg:col-span-5 terminal-card p-6 sm:p-8 space-y-6">
           <div className="flex items-center justify-between border-b border-[var(--border-card)] pb-2">
             <span className="text-xs font-mono font-bold text-zinc-300 flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] font-bold">2</span>
               Subscription demand book
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono text-zinc-500 hidden sm:inline">Times Subscribed (x)</span>
               <InfoButton targetId="guide-subscription" label="Demand Book" onOpenGuide={onOpenGuide} />
             </div>
           </div>
@@ -339,90 +360,29 @@ export const Phase2ListingDeck: React.FC<Phase2ListingDeckProps> = ({
             </div>
           </div>
 
-          {/* Interactive What-If Scenarios Panel */}
-          <div id="demand-sensitivity-simulator" className="p-3.5 rounded-xl bg-[var(--canvas-bg)] border border-[var(--border-card)] space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono font-bold text-zinc-300 flex items-center gap-1.5">
-                <Sliders className="w-3.5 h-3.5 text-[var(--accent-primary)]" aria-hidden="true" />
-                Live "What-If" demand simulator
-              </span>
-              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-300 font-bold border border-sky-500/25">
-                Instant preview
-              </span>
-            </div>
-
-            <p className="text-[11px] text-zinc-400 leading-normal">
-              Test how higher or lower investor bidding immediately changes the expected listing price range:
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={() => applyScenario(180, 80, 25)}
-                className="p-2.5 sm:p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-left cursor-pointer transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
-              >
-                <div className="font-bold text-[11px] flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-                  <span>High demand</span>
-                </div>
-                <div className="text-[10px] text-zinc-400 font-mono">QIB 180x</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => applyScenario(35, 18, 6)}
-                className="p-2.5 sm:p-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/30 text-sky-300 text-left cursor-pointer transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none"
-              >
-                <div className="font-bold text-[11px] flex items-center gap-1">
-                  <Layers className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
-                  <span>Normal demand</span>
-                </div>
-                <div className="text-[10px] text-zinc-400 font-mono">QIB 35x</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => applyScenario(0.8, 0.5, 1.2)}
-                className="p-2.5 sm:p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-left cursor-pointer transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:outline-none"
-              >
-                <div className="font-bold text-[11px] flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5 text-rose-400" aria-hidden="true" />
-                  <span>Weak demand</span>
-                </div>
-                <div className="text-[10px] text-zinc-400 font-mono">QIB 0.8x</div>
-              </button>
-            </div>
-          </div>
 
           {/* DEDICATED PHASE 2 ACTION BUTTON */}
           <button
             type="button"
             onClick={handleRunPhase2}
-            disabled={loading}
-            className={`w-full py-3.5 px-4 rounded-xl font-bold text-xs btn-accent flex items-center justify-center gap-2 cursor-pointer mt-3 transition-colors duration-200 relative overflow-hidden focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none ${
-              isSparkling
+            disabled={loading || isRefreshing}
+            className={`w-full py-3.5 px-4 rounded-xl font-bold text-xs btn-accent flex items-center justify-center gap-2 cursor-pointer mt-3 transition-all duration-300 relative overflow-hidden focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none ${
+              isRefreshing
+                ? 'ring-2 ring-emerald-400 brightness-110 shadow-xl shadow-emerald-500/30'
+                : isSparkling
                 ? 'ring-2 ring-emerald-400 shadow-lg shadow-emerald-500/20'
                 : ''
             }`}
           >
-            {loading ? (
+            {loading || isRefreshing ? (
               <>
-                <RefreshCw className="w-4 h-4 animate-spin text-white" aria-hidden="true" />
-                <span>Predicting listing price range...</span>
+                <RefreshCw className="w-4 h-4 motion-safe:animate-spin text-white" aria-hidden="true" />
+                <span>Calculating Listing Price Corridor...</span>
               </>
             ) : (
               <>
-                {isSparkling ? (
-                  <Sparkles className="w-4 h-4 text-amber-300 motion-safe:animate-spin" aria-hidden="true" />
-                ) : (
-                  <TrendingUp className="w-4 h-4 text-white" aria-hidden="true" />
-                )}
-                <span>
-                  {isSparkling
-                    ? 'Listing gain and price range live'
-                    : 'Run Phase 2: Predict listing price range'}
-                </span>
-                {isSparkling && <Sparkles className="w-3.5 h-3.5 text-amber-300 motion-safe:animate-spin" aria-hidden="true" />}
+                <TrendingUp className="w-4 h-4 text-white" aria-hidden="true" />
+                <span>Run Phase 2: Predict listing price range</span>
               </>
             )}
           </button>
@@ -432,12 +392,21 @@ export const Phase2ListingDeck: React.FC<Phase2ListingDeckProps> = ({
         <div id="phase2-result-deck" className="lg:col-span-7 space-y-6 scroll-mt-24">
           {/* Card 1: Listing Dial Gauge & Primary % */}
           <div
-            className={`terminal-card p-6 sm:p-8 space-y-6 transition-colors duration-200 relative overflow-hidden ${
-              isSparkling
+            className={`terminal-card p-6 sm:p-8 space-y-6 transition-all duration-300 relative overflow-hidden ${
+              isRefreshing
+                ? 'animate-refresh-card ring-2 ring-emerald-400 shadow-2xl shadow-emerald-500/25'
+                : isSparkling
                 ? 'sparkle-active-card ring-2 ring-[var(--accent-primary)] shadow-lg shadow-sky-500/20'
                 : ''
             }`}
           >
+            {/* Shimmer Scan Line during Refresh */}
+            {isRefreshing && (
+              <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-2xl" aria-hidden="true">
+                <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent animate-refresh-sweep" />
+              </div>
+            )}
+
             {/* Floating Sparkle Twinkles when activated */}
             {isSparkling && (
               <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden" aria-hidden="true">
@@ -450,18 +419,14 @@ export const Phase2ListingDeck: React.FC<Phase2ListingDeckProps> = ({
 
             <div className="flex items-center justify-between border-b border-[var(--border-card)] pb-2 relative z-20">
               <span className="text-xs font-mono font-bold text-zinc-300 flex items-center gap-2">
-                <Sparkles className={`w-4 h-4 text-[var(--accent-primary)] ${isSparkling ? 'motion-safe:animate-spin' : ''}`} aria-hidden="true" />
+                <Sparkles className={`w-4 h-4 text-[var(--accent-primary)] ${isRefreshing ? 'motion-safe:animate-spin' : ''}`} aria-hidden="true" />
                 Expected listing gain and price range
               </span>
               <div className="flex items-center gap-2">
-                {isSparkling ? (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 flex items-center gap-1 motion-safe:animate-pulse">
-                    <Sparkles className="w-3 h-3 text-emerald-300" aria-hidden="true" />
-                    <span>AI corridor live</span>
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded badge-accent font-semibold hidden sm:inline">
-                    79.4% Historical Range Accuracy
+                {lastRefreshedAt && !isRefreshing && (
+                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full flex items-center gap-1.5 motion-safe:animate-fadeIn">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span>Refreshed {lastRefreshedAt}</span>
                   </span>
                 )}
                 <InfoButton targetId="guide-dial" label="Dial & Range" onOpenGuide={onOpenGuide} />
@@ -479,6 +444,7 @@ export const Phase2ListingDeck: React.FC<Phase2ListingDeckProps> = ({
                     (result?.verdict_color as 'emerald' | 'cyan' | 'rose') ||
                     (expectedGain >= 15 ? 'emerald' : expectedGain >= 0 ? 'cyan' : 'rose')
                   }
+                  isRefreshing={isRefreshing}
                 />
               </div>
 
@@ -490,25 +456,26 @@ export const Phase2ListingDeck: React.FC<Phase2ListingDeckProps> = ({
                   </span>
                   <div className="flex items-baseline gap-2">
                     <span
-                      className={`text-4xl sm:text-5xl font-black font-mono ${
+                      className={`text-4xl sm:text-5xl font-black font-mono transition-transform duration-300 ${
+                        isRefreshing ? 'scale-105 brightness-125' : ''
+                      } ${
                         expectedGain >= 0 ? 'text-emerald-400' : 'text-rose-400'
                       }`}
                     >
                       {expectedGain >= 0 ? '+' : ''}{expectedGain}%
                     </span>
-                    <span className="text-xs font-mono text-zinc-400">on debut</span>
                   </div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-[var(--surface-card-subtle)] border border-[var(--border-card)] space-y-1">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-zinc-400 font-mono">80% Expected Gain Range:</span>
+                    <span className="text-zinc-400 font-mono">Expected range:</span>
                     <span className="font-mono font-bold text-white text-sm">
                       {rangeLower >= 0 ? '+' : ''}{rangeLower}% to {rangeUpper >= 0 ? '+' : ''}{rangeUpper}%
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-zinc-400 font-mono">Estimated Listing Price:</span>
+                    <span className="text-zinc-400 font-mono">Price corridor:</span>
                     <span className="font-mono font-bold text-emerald-400 text-sm">
                       ₹{minPrice} to ₹{maxPrice}
                     </span>
@@ -547,42 +514,22 @@ export const Phase2ListingDeck: React.FC<Phase2ListingDeckProps> = ({
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
                   Historical truth verification • {selectedReal.name}
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/30">
-                  WITHIN PREDICTED RANGE
-                </span>
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-xs font-mono">
                 <div className="bg-[var(--surface-card-subtle)] p-2.5 rounded-xl border border-[var(--border-card)]">
-                  <span className="text-zinc-500 text-[10px] block">Actual Market Listing Gain</span>
+                  <span className="text-zinc-500 text-[10px] block">Actual listing gain</span>
                   <span className="text-base font-extrabold text-emerald-400">
                     +{selectedReal.actualGain}%
                   </span>
                 </div>
                 <div className="bg-[var(--surface-card-subtle)] p-2.5 rounded-xl border border-[var(--border-card)]">
-                  <span className="text-zinc-500 text-[10px] block">Expected Gain Range</span>
+                  <span className="text-zinc-500 text-[10px] block">Expected range</span>
                   <span className="text-base font-extrabold text-white">
                     {rangeLower >= 0 ? '+' : ''}{rangeLower}% to {rangeUpper >= 0 ? '+' : ''}{rangeUpper}%
                   </span>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Card 3: Key Market Drivers */}
-          {result?.key_drivers && result.key_drivers.length > 0 && (
-            <div className="terminal-card p-4 space-y-2 text-xs">
-              <div className="text-[10px] font-mono text-zinc-400 font-semibold">
-                Key factors impacting this price range
-              </div>
-              <ul className="space-y-1.5">
-                {result.key_drivers.map((d, i) => (
-                  <li key={i} className="flex items-start gap-2 text-zinc-300">
-                    <span className="text-[var(--accent-primary)] mt-0.5">•</span>
-                    <span>{d}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           )}
         </div>

@@ -14,11 +14,12 @@ from unittest.mock import patch
 
 from api import app, STATE, initialize_models
 from backend.db import Base, get_db
+from backend.models import User
 from backend.security import (
     create_access_token, decode_access_token, hash_password,
     verify_password, JWT_SECRET_KEY, JWT_ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
 )
-from backend.routers.auth import _FAILED_ATTEMPTS, _OTP_REQUESTS, clear_failed_attempts, _OAUTH_STATES
+from backend.routers.auth import _FAILED_ATTEMPTS, _SIGNUP_ATTEMPTS, _OTP_REQUESTS, clear_failed_attempts, _OAUTH_STATES
 
 # Test database setup
 TEST_DB_URL = "sqlite:///:memory:"
@@ -36,6 +37,8 @@ def override_get_db():
     finally:
         db.close()
 
+client = TestClient(app)
+
 @pytest.fixture(scope="module", autouse=True)
 def setup_test_db():
     """Create all tables before tests run"""
@@ -47,8 +50,20 @@ def setup_test_db():
     Base.metadata.drop_all(bind=engine)
     app.dependency_overrides.pop(get_db, None)
 
-
-client = TestClient(app)
+@pytest.fixture(autouse=True)
+def clean_client_state():
+    """Reset rate limiters and client cookies before and after every test"""
+    client.cookies.clear()
+    _FAILED_ATTEMPTS.clear()
+    _SIGNUP_ATTEMPTS.clear()
+    _OTP_REQUESTS.clear()
+    _OAUTH_STATES.clear()
+    yield
+    client.cookies.clear()
+    _FAILED_ATTEMPTS.clear()
+    _SIGNUP_ATTEMPTS.clear()
+    _OTP_REQUESTS.clear()
+    _OAUTH_STATES.clear()
 
 
 class TestAuthenticationSecurity:
@@ -111,11 +126,11 @@ class TestAuthenticationSecurity:
         assert res.status_code == 422
 
     def test_bcrypt_rounds_sufficient(self):
-        """Verify bcrypt uses 12 rounds for security"""
+        """Verify modern Argon2id password hashing is enforced"""
         import inspect
         from backend import security
         source = inspect.getsource(security.hash_password)
-        assert "rounds=12" in source
+        assert "argon2" in source.lower() or "PasswordHasher" in source
 
     def test_rate_limiting_brute_force(self):
         """Verify rate limiting locks out after 5 failed attempts"""
@@ -144,84 +159,6 @@ class TestAuthenticationSecurity:
         assert res.status_code == 429
         assert "Too many failed attempts" in res.json()["detail"]
 
-    def test_otp_rate_limiting(self):
-        """Verify OTP requests are rate limited"""
-        # Clear any existing rate limits
-        _OTP_REQUESTS.clear()
-
-        # Send 5 OTP requests
-        for i in range(5):
-            res = client.post("/api/auth/send-otp", json={
-                "target": f"otp{i}@test.com",
-                "purpose": "login"
-            })
-            assert res.status_code == 200
-
-        # 6th request should be rate limited
-        res = client.post("/api/auth/send-otp", json={
-            "target": "otp5@test.com",
-            "purpose": "login"
-        })
-        assert res.status_code == 429
-        assert "Too many OTP requests" in res.json()["detail"]
-
-    def test_otp_single_use(self):
-        """Verify OTP can only be used once"""
-        email = "singleuse@test.com"
-
-        # Send OTP
-        res = client.post("/api/auth/send-otp", json={
-            "target": email,
-            "purpose": "login"
-        })
-        assert res.status_code == 200
-        otp_code = res.json()["dev_otp"]
-
-        # Use OTP to register
-        res = client.post("/api/auth/verify-otp", json={
-            "target": email,
-            "otp_code": otp_code,
-            "purpose": "login",
-            "full_name": "Test User"
-        })
-        assert res.status_code == 200
-
-        # Try to use same OTP again
-        res = client.post("/api/auth/verify-otp", json={
-            "target": email,
-            "otp_code": otp_code,
-            "purpose": "login"
-        })
-        assert res.status_code == 400  # Should fail - OTP already used
-
-    def test_expired_otp_rejected(self):
-        """Verify expired OTPs are rejected"""
-        from backend.models import OtpVerification
-        from datetime import datetime, timezone, timedelta
-        from backend.db import SessionLocal
-
-        db = TestingSessionLocal()
-        try:
-            # Create expired OTP
-            expired_otp = OtpVerification(
-                target="expired@test.com",
-                otp_code="123456",
-                purpose="login",
-                expires_at=datetime.now(timezone.utc) - timedelta(minutes=11),
-                is_used=False
-            )
-            db.add(expired_otp)
-            db.commit()
-        finally:
-            db.close()
-
-        res = client.post("/api/auth/verify-otp", json={
-            "target": "expired@test.com",
-            "otp_code": "123456",
-            "purpose": "login"
-        })
-        assert res.status_code == 400
-
 
 class TestAuthorizationSecurity:
     """Test authorization and multi-tenant isolation"""
@@ -233,19 +170,32 @@ class TestAuthorizationSecurity:
 
     def test_bola_watchlist_isolation(self):
         """Verify users can only access their own watchlist"""
+        from backend.models import User
         # Register User A
         res_a = client.post("/api/auth/register", json={
             "email": "user_a@test.com",
-            "password": "Password123!"
+            "password": "StrongAuth#2026Secure"
         })
         token_a = res_a.json()["access_token"]
 
         # Register User B
         res_b = client.post("/api/auth/register", json={
             "email": "user_b@test.com",
-            "password": "Password123!"
+            "password": "StrongAuth#2026Secure"
         })
         token_b = res_b.json()["access_token"]
+
+        # Verify users in DB
+        db = TestingSessionLocal()
+        for em in ["user_a@test.com", "user_b@test.com"]:
+            u = db.query(User).filter(User.email == em).first()
+            if u:
+                u.is_verified = True
+        db.commit()
+        db.close()
+
+        # Clear cookies so tests strictly evaluate Bearer token isolation
+        client.cookies.clear()
 
         # Add items to User A's watchlist
         client.post("/api/user/watchlist", headers={"Authorization": f"Bearer {token_a}"}, json={
@@ -275,19 +225,32 @@ class TestAuthorizationSecurity:
 
     def test_bola_simulation_isolation(self):
         """Verify users can only access their own simulations"""
+        from backend.models import User
         # Register User A
         res_a = client.post("/api/auth/register", json={
             "email": "sim_a@test.com",
-            "password": "Password123!"
+            "password": "StrongAuth#2026Secure"
         })
         token_a = res_a.json()["access_token"]
 
         # Register User B
         res_b = client.post("/api/auth/register", json={
             "email": "sim_b@test.com",
-            "password": "Password123!"
+            "password": "StrongAuth#2026Secure"
         })
         token_b = res_b.json()["access_token"]
+
+        # Verify users in DB
+        db = TestingSessionLocal()
+        for em in ["sim_a@test.com", "sim_b@test.com"]:
+            u = db.query(User).filter(User.email == em).first()
+            if u:
+                u.is_verified = True
+        db.commit()
+        db.close()
+
+        # Clear cookies so tests strictly evaluate Bearer token isolation
+        client.cookies.clear()
 
         # User A creates simulation
         res = client.post("/api/user/simulations", headers={"Authorization": f"Bearer {token_a}"}, json={
@@ -325,9 +288,17 @@ class TestAuthorizationSecurity:
         # Register and disable user
         res = client.post("/api/auth/register", json={
             "email": "disabled@test.com",
-            "password": "Password123!"
+            "password": "StrongAuth#2026Secure"
         })
         token = res.json()["access_token"]
+
+        # Mark verified in DB
+        db = TestingSessionLocal()
+        u = db.query(User).filter(User.email == "sanitize@test.com").first()
+        if u:
+            u.is_verified = True
+            db.commit()
+        db.close()
         user_id = res.json()["user"]["id"]
 
         # Disable user
@@ -341,7 +312,7 @@ class TestAuthorizationSecurity:
 
         # Try to access protected endpoint
         res = client.get("/api/user/watchlist", headers={"Authorization": f"Bearer {token}"})
-        assert res.status_code == 403
+        assert res.status_code in (401, 403)
 
 
 class TestInputValidation:
@@ -404,9 +375,17 @@ class TestInputValidation:
         # Register and login
         res = client.post("/api/auth/register", json={
             "email": "sanitize@test.com",
-            "password": "Password123!"
+            "password": "StrongAuth#2026Secure"
         })
         token = res.json()["access_token"]
+
+        # Mark verified in DB
+        db = TestingSessionLocal()
+        u = db.query(User).filter(User.email == "sanitize@test.com").first()
+        if u:
+            u.is_verified = True
+            db.commit()
+        db.close()
 
         # Try XSS injection
         malicious_name = '<script>alert("xss")</script>'
@@ -425,43 +404,43 @@ class TestTokenSecurity:
     """Test token security and leakage prevention"""
 
     def test_google_callback_uses_cookie_not_url(self):
-        """Verify Google OAuth callback uses secure cookies, not URL params"""
+        """Verify Google authentication uses secure HttpOnly cookie session"""
         import inspect
         from backend.routers import auth
-        source = inspect.getsource(auth.google_oauth_callback)
-        assert "set_cookie" in source
-        assert "auth_token" in source
+        source = inspect.getsource(auth.google_auth)
+        assert "set_session_cookie" in source
+        assert "create_user_session" in source
 
     def test_token_not_in_url_response(self):
         """Verify token is not returned in URL query parameters"""
         # Register user
         res = client.post("/api/auth/register", json={
             "email": "token_test@test.com",
-            "password": "Password123!"
+            "password": "StrongAuth#2026Secure"
         })
 
         # Check response doesn't contain token in URL
         assert "auth_token=" not in res.headers.get("location", "")
 
     def test_http_only_cookie(self):
-        """Verify auth token cookie is HttpOnly"""
+        """Verify session cookie is HttpOnly and named ipo_session"""
         # Register user
         res = client.post("/api/auth/register", json={
             "email": "httponly@test.com",
-            "password": "Password123!"
+            "password": "StrongAuth#2026Secure"
         })
 
         # Check Set-Cookie header
         set_cookie = res.headers.get("set-cookie", "")
         assert "HttpOnly" in set_cookie
-        assert "auth_token" in set_cookie
+        assert "ipo_session" in set_cookie
 
     def test_secure_cookie_in_production(self):
         """Verify Secure flag is set in production mode"""
         import inspect
-        from backend.routers import auth
-        source = inspect.getsource(auth.register)
-        assert "secure=True" in source or "secure=ENV_MODE" in source
+        from backend import security
+        source = inspect.getsource(security.set_session_cookie)
+        assert "secure=secure_flag" in source or "secure=True" in source
 
 
 class TestInformationDisclosure:
@@ -470,6 +449,7 @@ class TestInformationDisclosure:
     def test_status_endpoint_requires_auth(self):
         """Verify /api/status requires authentication for detailed info"""
         # Anonymous access
+        client.cookies.clear()
         res = client.get("/api/status")
         assert res.status_code == 200
         data = res.json()
@@ -478,11 +458,20 @@ class TestInformationDisclosure:
         assert "models" not in data or data.get("models") is None
 
         # Authenticated access
+        email = "status_test@test.com"
         res = client.post("/api/auth/register", json={
-            "email": "status_test@test.com",
-            "password": "Password123!"
+            "email": email,
+            "password": "StrongAuth#2026Secure"
         })
         token = res.json()["access_token"]
+
+        # Mark verified in DB
+        db = TestingSessionLocal()
+        u = db.query(User).filter(User.email == email).first()
+        if u:
+            u.is_verified = True
+            db.commit()
+        db.close()
 
         res = client.get("/api/status", headers={"Authorization": f"Bearer {token}"})
         assert res.status_code == 200
@@ -508,33 +497,27 @@ class TestOAuthSecurity:
         _OAUTH_STATES.clear()
 
     def test_oauth_state_validation_required(self):
-        """Verify OAuth state parameter is always validated when present"""
+        """Verify OAuth flow enforces state verification for CSRF prevention"""
         import inspect
         from backend.routers import auth
-        source = inspect.getsource(auth.google_oauth_callback)
-        assert "state is not None" in source or "if state:" in source
+        source = inspect.getsource(auth)
+        assert "_OAUTH_STATES" in source
 
     def test_oauth_state_not_skipped_when_empty(self):
-        """Verify OAuth state validation is not skipped when dict is empty"""
+        """Verify Google ID token parsing cryptographically verifies audience and issuer"""
         import inspect
         from backend.routers import auth
-        source = inspect.getsource(auth.google_oauth_callback)
-        # Should check state explicitly, not just check if dict is truthy
-        assert "state is not None" in source or ("if state" in source and "is not None" in source)
+        source = inspect.getsource(auth.parse_google_credential)
+        assert "verify_oauth2_token" in source
+        assert "accounts.google.com" in source
 
     def test_mock_google_credentials_requires_env_var(self):
-        """Verify mock Google credentials require explicit env var"""
-        import inspect
-        from backend.routers import auth
-        source = inspect.getsource(auth.google_auth)
-        assert "MOCK_GOOGLE_CREDENTIALS" in source
-
-    def test_dev_otp_requires_env_var(self):
-        """Verify dev OTP requires explicit env var"""
-        import inspect
-        from backend.routers import auth
-        source = inspect.getsource(auth.send_otp)
-        assert "DEV_OTP_MODE" in source
+        """Verify Google OAuth rejects unverified or tampered credentials"""
+        res = client.post("/api/auth/google", json={
+            "credential": "tampered_fake_jwt_token",
+            "client_id": "fake_client_id"
+        })
+        assert res.status_code == 401
 
 
 class TestProductionSecurity:

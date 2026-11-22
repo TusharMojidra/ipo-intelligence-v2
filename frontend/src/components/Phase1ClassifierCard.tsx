@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   Flame, Sparkles, ShieldCheck, AlertTriangle, ArrowRight,
-  TrendingUp, RefreshCw, BarChart2, Cpu, CheckCircle2, ArrowDown
+  TrendingUp, RefreshCw, BarChart2, Cpu, CheckCircle2
 } from 'lucide-react';
 import { PredictionResult } from '../types';
 import { InfoButton } from './InfoButton';
@@ -63,6 +63,8 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
   onOpenGuide,
 }) => {
   const [showAdvancedMacro, setShowAdvancedMacro] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefreshedAt, setLastRefreshedAt] = useState<string | null>(null);
 
   const hotProb = result?.hot_probability ?? 82.5;
   const isHot = hotProb >= 65;
@@ -72,9 +74,9 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
   const getHeatBadge = () => {
     if (isHot) {
       return {
-        level: 'HOT',
-        tag: 'HIGH DEMAND',
-        text: '🔥 HOT DEMAND (High Listing Interest)',
+        level: 'Hot',
+        tag: 'High demand',
+        text: 'High listing interest',
         bg: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
         dot: 'bg-emerald-400',
         statusColor: 'text-emerald-400',
@@ -83,9 +85,9 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
     }
     if (isModerate) {
       return {
-        level: 'MODERATE',
-        tag: 'SELECTIVE DEMAND',
-        text: '⚡ MODERATE DEMAND (Selective Interest)',
+        level: 'Moderate',
+        tag: 'Selective demand',
+        text: 'Selective interest',
         bg: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
         dot: 'bg-amber-400',
         statusColor: 'text-amber-400',
@@ -93,9 +95,9 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
       };
     }
     return {
-      level: 'COLD',
-      tag: 'WEAK DEMAND',
-      text: '❄️ COLD / SUBDUED DEMAND (Discount Risk)',
+      level: 'Cold',
+      tag: 'Weak demand',
+      text: 'Discount risk',
       bg: 'bg-rose-500/10 border-rose-500/30 text-rose-300',
       dot: 'bg-rose-400',
       statusColor: 'text-rose-400',
@@ -106,54 +108,83 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
   const badge = getHeatBadge();
 
   const handleRunPhase1 = () => {
+    setIsRefreshing(true);
     onRunPhase1();
+
     // Smoothly redirect / scroll to Phase 1 result card on mobile and stacked layouts
     setTimeout(() => {
       const el = document.getElementById('phase1-result-deck');
       if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-    }, 120);
+    }, 100);
+
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setLastRefreshedAt(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+    }, 750);
   };
 
   return (
     <section id="phase1-section" className="space-y-8 pt-6">
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-card)] pb-5">
-        <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl badge-accent flex items-center justify-center font-bold shrink-0">
-            <Flame className="w-5 h-5 text-[var(--accent-primary)]" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+      {/* Section Header Landmark Banner */}
+      <div className="relative overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-r from-amber-950/40 via-[var(--surface-card)] to-[var(--surface-card)] p-5 sm:p-6 shadow-xl backdrop-blur-md">
+        {/* Ambient Top Glow Line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-amber-400 via-orange-500 to-transparent" />
+        
+        {/* Subtle background animated particle or radial glow */}
+        <div className="absolute -top-12 -left-12 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+
+        <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="flex items-start gap-4">
+            {/* Animated Luminous Icon Badge */}
+            <div className="relative shrink-0 mt-0.5">
+              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 opacity-60 blur-sm animate-pulse" />
+              <div className="relative w-12 h-12 rounded-xl bg-slate-900 border border-amber-400/30 flex items-center justify-center text-amber-400 shadow-lg">
+                <Flame className="w-6 h-6 text-amber-400" aria-hidden="true" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {/* Eyebrow & Info Button */}
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                  Phase 01 Classifier
+                </span>
+                <InfoButton targetId="guide-phase1" label="How It Works" onOpenGuide={onOpenGuide} />
+              </div>
+
+              {/* Major Section Heading */}
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-snug">
                 Phase 1: Pre-IPO Profit Check
               </h2>
-              <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full badge-accent font-semibold">
-                BEFORE YOU BID
-              </span>
-              <InfoButton targetId="guide-phase1" label="How It Works" onOpenGuide={onOpenGuide} />
-            </div>
-            <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-              Evaluates company details & market trend before bidding closes: <strong>"Will this IPO open with positive gains?"</strong>
-            </p>
-          </div>
-        </div>
 
-        {/* Quick Autofill Presets */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <span className="text-xs text-zinc-400 font-mono hidden sm:inline">Try Demo IPO:</span>
-          <select
-            value={companyName}
-            onChange={(e) => onSelectRealIpo(e.target.value)}
-            className="bg-[var(--surface-card-subtle)] border border-[var(--border-card)] rounded-xl px-3 py-2 text-xs text-zinc-200 font-mono focus:outline-none focus:border-[var(--accent-primary)] shadow-sm focus-visible:ring-2 focus-visible:ring-sky-400"
-          >
-            {REAL_IPOS.map((ipo) => (
-              <option key={ipo.name} value={ipo.name}>
-                {ipo.name}
-              </option>
-            ))}
-          </select>
+              {/* Subtitle / Objective Question */}
+              <p className="text-xs sm:text-sm text-zinc-300 max-w-2xl leading-relaxed">
+                Evaluates company details & market trend before bidding closes: <span className="text-amber-300 font-semibold">"Will this IPO open with positive gains?"</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Autofill Presets Selector */}
+          <div className="shrink-0 flex items-center gap-2 sm:self-auto self-start">
+            <span className="text-[11px] font-mono text-zinc-400 hidden sm:inline">Sample IPO:</span>
+            <div className="relative">
+              <select
+                value={companyName}
+                onChange={(e) => onSelectRealIpo(e.target.value)}
+                className="bg-slate-900/90 border border-amber-500/25 rounded-xl px-3.5 py-2 text-xs text-zinc-200 font-mono focus:outline-none focus:border-amber-400 shadow-md focus-visible:ring-2 focus-visible:ring-amber-400 cursor-pointer"
+                aria-label="Select sample IPO"
+              >
+                {REAL_IPOS.map((ipo) => (
+                  <option key={ipo.name} value={ipo.name}>
+                    {ipo.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -163,11 +194,9 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
         <div className="lg:col-span-6 terminal-card p-6 sm:p-8 space-y-6">
           <div className="flex items-center justify-between border-b border-[var(--border-card)] pb-2">
             <span className="text-xs font-bold text-zinc-300 flex items-center gap-2 font-sans">
-              <span className="w-5 h-5 rounded-full bg-white/10 text-white flex items-center justify-center text-[10px] font-bold">1</span>
               Pre-IPO Offering Parameters
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono text-zinc-500 hidden sm:inline">Known before bidding</span>
               <InfoButton targetId="guide-offering" label="Offering Facts" onOpenGuide={onOpenGuide} />
             </div>
           </div>
@@ -191,7 +220,6 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
                 <label htmlFor="phase1-issue-size" className="text-zinc-300 font-semibold cursor-pointer">
                   Issue Size (₹ Cr)
                 </label>
-                <span className="text-[11px] font-mono text-zinc-500">₹ Crores</span>
               </div>
               <div className="relative flex items-center">
                 <span className="absolute left-3 text-xs font-mono text-zinc-400 select-none">₹</span>
@@ -225,7 +253,6 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
                 <label htmlFor="phase1-offer-price" className="text-zinc-300 font-semibold cursor-pointer">
                   Offer Price (₹)
                 </label>
-                <span className="text-[11px] font-mono text-zinc-500">Per Share</span>
               </div>
               <div className="relative flex items-center">
                 <span className="absolute left-3 text-xs font-mono text-zinc-400 select-none">₹</span>
@@ -308,31 +335,24 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
           <button
             type="button"
             onClick={handleRunPhase1}
-            disabled={loading}
-            className={`w-full py-3.5 px-4 rounded-xl font-bold text-xs font-mono btn-accent flex items-center justify-center gap-2 cursor-pointer mt-2 transition-colors duration-200 relative overflow-hidden focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none ${
-              isSparkling
+            disabled={loading || isRefreshing}
+            className={`w-full py-3.5 px-4 rounded-xl font-bold text-xs font-mono btn-accent flex items-center justify-center gap-2 cursor-pointer mt-2 transition-all duration-300 relative overflow-hidden focus-visible:ring-2 focus-visible:ring-sky-400 focus-visible:outline-none ${
+              isRefreshing
+                ? 'ring-2 ring-sky-400 brightness-110 shadow-lg shadow-sky-500/30'
+                : isSparkling
                 ? 'ring-2 ring-amber-400 shadow-md motion-safe:scale-[1.01]'
                 : ''
             }`}
           >
-            {loading ? (
+            {loading || isRefreshing ? (
               <>
                 <RefreshCw className="w-4 h-4 motion-safe:animate-spin text-white" aria-hidden="true" />
                 <span>Analyzing Pre-IPO Demand...</span>
               </>
             ) : (
               <>
-                {isSparkling ? (
-                  <Sparkles className="w-4 h-4 text-amber-300 motion-safe:animate-spin" aria-hidden="true" />
-                ) : (
-                  <Flame className="w-4 h-4" aria-hidden="true" />
-                )}
-                <span>
-                  {isSparkling
-                    ? 'Pre-IPO Demand Status Live!'
-                    : 'Run Phase 1: Test IPO Demand Status'}
-                </span>
-                {isSparkling && <Sparkles className="w-3.5 h-3.5 text-amber-300" aria-hidden="true" />}
+                <Flame className="w-4 h-4 text-amber-300" aria-hidden="true" />
+                <span>Run Phase 1: Test IPO Demand Status</span>
               </>
             )}
           </button>
@@ -341,25 +361,32 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
         {/* Right Output: Phase 1 Classification Verdict (6 cols) */}
         <div
           id="phase1-result-deck"
-          className={`lg:col-span-6 terminal-card p-6 sm:p-8 space-y-6 transition-colors duration-300 relative overflow-hidden scroll-mt-24 ${
-            isSparkling
+          className={`lg:col-span-6 terminal-card p-6 sm:p-8 space-y-6 transition-all duration-300 relative overflow-hidden scroll-mt-24 ${
+            isRefreshing
+              ? 'animate-refresh-card ring-2 ring-[var(--accent-primary)] shadow-xl shadow-sky-500/25'
+              : isSparkling
               ? 'sparkle-active-card ring-2 ring-[var(--accent-primary)] shadow-lg'
               : ''
           }`}
         >
+          {/* Shimmer Scan Line during Refresh */}
+          {isRefreshing && (
+            <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden rounded-2xl" aria-hidden="true">
+              <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-[var(--accent-primary)]/30 to-transparent animate-refresh-sweep" />
+            </div>
+          )}
+
           <div className="flex items-center justify-between border-b border-[var(--border-card)] pb-2 relative z-20">
             <span className="text-xs font-bold text-zinc-300 flex items-center gap-2 font-sans">
-              <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" aria-hidden="true" />
+              <Sparkles className={`w-4 h-4 text-[var(--accent-primary)] ${isRefreshing ? 'motion-safe:animate-spin' : ''}`} aria-hidden="true" />
               Phase 1 Directional Verdict
             </span>
             <div className="flex items-center gap-2">
-              {isSparkling ? (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 flex items-center gap-1 motion-safe:animate-pulse">
-                  <Sparkles className="w-3 h-3 text-emerald-300" aria-hidden="true" />
-                  <span>AI Prediction Live</span>
+              {lastRefreshedAt && !isRefreshing && (
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-full flex items-center gap-1.5 motion-safe:animate-fadeIn">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>Refreshed {lastRefreshedAt}</span>
                 </span>
-              ) : (
-                <span className="text-[11px] font-mono text-zinc-500 hidden sm:inline">XGBoost + Random Forest</span>
               )}
               <InfoButton targetId="guide-phase1" label="Verdict Info" onOpenGuide={onOpenGuide} />
             </div>
@@ -368,11 +395,8 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
           {/* Top Big Heat Badge (Qualitative Demand Only) */}
           <div className={`p-4 rounded-xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${badge.bg}`}>
             <div>
-              <div className="text-xs text-zinc-400 font-semibold mb-1 font-sans">
-                Pre-IPO Demand Category
-              </div>
               <div className="text-base sm:text-xl font-black font-mono flex items-center gap-2 text-white">
-                <span className={`w-3 h-3 rounded-full ${badge.dot} motion-safe:animate-pulse`} />
+                <span className={`w-3 h-3 rounded-full ${badge.dot}`} />
                 <span>{badge.text}</span>
               </div>
               <p className="text-[11px] text-zinc-300 mt-1">{badge.description}</p>
@@ -381,22 +405,11 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
               <span className={`text-2xl sm:text-3xl font-black font-mono tracking-tight block ${badge.statusColor}`}>
                 {badge.level}
               </span>
-              <span className="text-[10px] font-mono text-zinc-400 font-semibold">
-                {badge.tag}
-              </span>
             </div>
           </div>
 
           {/* 3-Tier Qualitative Demand Spectrum (Cold / Moderate / Hot) */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-xs font-mono">
-              <span className="text-zinc-400">Demand Level Spectrum</span>
-              <span className="font-bold text-white flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${badge.dot}`} />
-                Status: {badge.level}
-              </span>
-            </div>
-
             <div className="grid grid-cols-3 gap-2">
               <div className={`p-2.5 rounded-xl border text-center transition-colors duration-200 ${
                 isCold
@@ -404,7 +417,6 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
                   : 'bg-[var(--canvas-bg)] border-[var(--border-card)] text-zinc-500 opacity-60'
               }`}>
                 <div className="text-xs font-mono font-bold">Cold Risk</div>
-                <div className="text-[9px] font-mono mt-0.5">{isCold ? '● Active Signal' : 'Discount Risk'}</div>
               </div>
 
               <div className={`p-2.5 rounded-xl border text-center transition-colors duration-200 ${
@@ -413,7 +425,6 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
                   : 'bg-[var(--canvas-bg)] border-[var(--border-card)] text-zinc-500 opacity-60'
               }`}>
                 <div className="text-xs font-mono font-bold">Moderate</div>
-                <div className="text-[9px] font-mono mt-0.5">{isModerate ? '● Active Signal' : 'Selective Demand'}</div>
               </div>
 
               <div className={`p-2.5 rounded-xl border text-center transition-colors duration-200 ${
@@ -422,35 +433,10 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
                   : 'bg-[var(--canvas-bg)] border-[var(--border-card)] text-zinc-500 opacity-60'
               }`}>
                 <div className="text-xs font-mono font-bold">Hot Debut</div>
-                <div className="text-[9px] font-mono mt-0.5">{isHot ? '● Active Signal' : 'High Pop'}</div>
               </div>
             </div>
           </div>
 
-          {/* Market & Fundamental Signals */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-            <div className="bg-[var(--surface-card-subtle)] p-3 rounded-xl border border-[var(--border-card)]">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-mono text-zinc-400">Market Sentiment</span>
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
-              </div>
-              <div className="text-sm sm:text-base font-extrabold font-mono text-white">
-                {isHot ? 'Favorable / Bullish' : isModerate ? 'Neutral Support' : 'Cautious Climate'}
-              </div>
-              <span className="text-[10px] text-zinc-500">Nifty trend & liquidity</span>
-            </div>
-
-            <div className="bg-[var(--surface-card-subtle)] p-3 rounded-xl border border-[var(--border-card)]">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-mono text-zinc-400">Expected Direction</span>
-                <ShieldCheck className="w-3.5 h-3.5 text-sky-400" aria-hidden="true" />
-              </div>
-              <div className="text-sm sm:text-base font-extrabold font-mono text-white">
-                {isHot ? 'Positive Listing Bias' : isModerate ? 'Moderate Variance' : 'Discount Risk'}
-              </div>
-              <span className="text-[10px] text-zinc-500">Issue size & pricing fit</span>
-            </div>
-          </div>
 
           {/* Action Advice & Next Step CTA */}
           <div className="pt-2 border-t border-[var(--border-card)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
@@ -469,19 +455,6 @@ export const Phase1ClassifierCard: React.FC<Phase1ClassifierCardProps> = ({
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Progressive Disclosure Pipeline Conduit Bridge */}
-      <div className="flex items-center justify-center gap-2 sm:gap-3 py-2 px-2">
-        <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-card)] to-transparent flex-1" />
-        <div className="px-3 sm:px-4 py-1.5 rounded-full bg-[var(--surface-card-subtle)] border border-[var(--border-card)] text-[10px] font-mono text-zinc-400 flex items-center gap-1.5 sm:gap-2 text-center">
-          <span className="hidden sm:inline">Directional Signal Confirmed</span>
-          <span className="sm:hidden">Signal Ready</span>
-          <ArrowDown className="w-3 h-3 text-[var(--accent-primary)] motion-safe:animate-bounce shrink-0" aria-hidden="true" />
-          <span className="hidden sm:inline">Feed Live Bidding Demand Into Price Range Predictor</span>
-          <span className="sm:hidden">Feed Book to Phase 2</span>
-        </div>
-        <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-card)] to-transparent flex-1" />
       </div>
     </section>
   );

@@ -12,7 +12,7 @@ from backend.schemas import (
     SimulationCreate,
     SimulationResponse
 )
-from backend.security import get_current_user
+from backend.security import get_current_user, get_verified_user
 
 router = APIRouter(prefix="/api/user", tags=["User Data"])
 
@@ -26,7 +26,7 @@ def get_watchlist(current_user: User = Depends(get_current_user), db: Session = 
 
 
 @router.post("/watchlist", response_model=WatchlistResponse, status_code=status.HTTP_201_CREATED)
-def add_to_watchlist(item: WatchlistCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def add_to_watchlist(item: WatchlistCreate, current_user: User = Depends(get_verified_user), db: Session = Depends(get_db)):
     """Add an IPO to the user's personal watchlist."""
     existing = db.query(UserWatchlist).filter(
         UserWatchlist.user_id == current_user.id,
@@ -53,7 +53,7 @@ def add_to_watchlist(item: WatchlistCreate, current_user: User = Depends(get_cur
 
 
 @router.delete("/watchlist/{company_name}")
-def remove_from_watchlist(company_name: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def remove_from_watchlist(company_name: str, current_user: User = Depends(get_verified_user), db: Session = Depends(get_db)):
     """Remove an IPO from the user's personal watchlist by company name."""
     entry = db.query(UserWatchlist).filter(
         UserWatchlist.user_id == current_user.id,
@@ -90,7 +90,7 @@ def get_saved_simulations(current_user: User = Depends(get_current_user), db: Se
 
 
 @router.post("/simulations", response_model=SimulationResponse, status_code=status.HTTP_201_CREATED)
-def save_simulation(sim: SimulationCreate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def save_simulation(sim: SimulationCreate, current_user: User = Depends(get_verified_user), db: Session = Depends(get_db)):
     """Save an IPO simulation scenario to the user's personal vault."""
     new_sim = SavedSimulation(
         user_id=current_user.id,
@@ -112,7 +112,7 @@ def save_simulation(sim: SimulationCreate, current_user: User = Depends(get_curr
 
 
 @router.delete("/simulations/{sim_id}")
-def delete_saved_simulation(sim_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def delete_saved_simulation(sim_id: int, current_user: User = Depends(get_verified_user), db: Session = Depends(get_db)):
     """Delete a saved simulation scenario by ID."""
     entry = db.query(SavedSimulation).filter(
         SavedSimulation.id == sim_id,

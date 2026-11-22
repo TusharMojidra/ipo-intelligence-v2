@@ -23,5 +23,5 @@ COPY . .
 # Expose default port
 EXPOSE 8000
 
-# Run FastAPI app with uvicorn on $PORT
-CMD ["sh", "-c", "exec uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Run FastAPI app with uvicorn on $PORT with proxy headers enabled for reverse proxies
+CMD ["sh", "-c", "exec uvicorn api:app --host 0.0.0.0 --port ${PORT:-8000} --proxy-headers --forwarded-allow-ips '*'"]

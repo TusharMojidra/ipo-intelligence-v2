@@ -6,40 +6,35 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = Field(None, max_length=120)
-    phone_number: Optional[str] = Field(None, max_length=30)
     avatar_url: Optional[str] = Field(None, max_length=500)
     auth_provider: Optional[str] = Field("local", max_length=50)
 
 class UserRegister(UserBase):
     password: str = Field(..., min_length=8, max_length=128, description="Password must be between 8 and 128 characters")
-    phone_number: Optional[str] = Field(None, max_length=30, description="Mobile number (optional or for SMS verification)")
-    otp_code: Optional[str] = Field(None, min_length=4, max_length=10, description="Optional verification OTP code")
 
 class UserLogin(BaseModel):
-    identifier: Optional[str] = Field(None, max_length=255, description="Email address or Mobile number")
-    email: Optional[EmailStr] = Field(None, description="Legacy email field for backward compatibility")
-    password: Optional[str] = Field(None, max_length=128, description="Password for credential authentication")
-    otp_code: Optional[str] = Field(None, min_length=4, max_length=10, description="OTP code for passwordless/verified login")
+    email: Optional[EmailStr] = Field(None, description="Email address")
+    identifier: Optional[str] = Field(None, max_length=255, description="Email address identifier")
+    password: str = Field(..., max_length=128, description="Password for authentication")
+    remember_me: bool = Field(False, description="Extend session lifetime to 7 days via persistent HttpOnly cookie")
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr = Field(..., description="Email address for password reset")
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(..., min_length=10, max_length=255, description="Password reset token")
+    new_password: str = Field(..., min_length=8, max_length=128, description="New strong password")
+
+class VerifyEmailRequest(BaseModel):
+    token: str = Field(..., min_length=10, max_length=255, description="Email verification token")
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr = Field(..., description="Email address to resend verification")
 
 class GoogleAuthRequest(BaseModel):
     credential: str = Field(..., max_length=4096, description="Google ID Token JWT from Google Identity Services")
     client_id: Optional[str] = Field(None, max_length=255)
     user_info: Optional[Dict[str, Any]] = None
-
-class SendOtpRequest(BaseModel):
-    target: str = Field(..., min_length=3, max_length=255, description="Email address or Mobile number")
-    purpose: str = Field("login", max_length=50, description="Purpose: 'login', 'register', or 'verify'")
-
-class VerifyOtpRequest(BaseModel):
-    target: str = Field(..., min_length=3, max_length=255, description="Email address or Mobile number")
-    otp_code: str = Field(..., min_length=4, max_length=10, description="Verification OTP code")
-    purpose: str = Field("login", max_length=50, description="Purpose: 'login', 'register', or 'verify'")
-    full_name: Optional[str] = Field(None, max_length=120)
-
-class OtpResponse(BaseModel):
-    message: str
-    target: str
-    dev_otp: Optional[str] = None
 
 class UserResponse(UserBase):
     id: int
@@ -51,6 +46,17 @@ class UserResponse(UserBase):
     avatar_url: Optional[str] = None
     phone_number: Optional[str] = None
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class SessionResponse(BaseModel):
+    id: int
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+    expires_at: datetime
+    last_active_at: datetime
+    created_at: datetime
+    is_current: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -92,7 +98,6 @@ class SimulationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # Feedback & Contact Schemas
 class FeedbackCreate(BaseModel):
     name: Optional[str] = Field(None, max_length=120)
@@ -117,4 +122,3 @@ class ContactInfoResponse(BaseModel):
     version: str
     support_sla: str
     channels: Dict[str, str]
-
