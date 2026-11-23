@@ -47,17 +47,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-      (function() {
-        var t = localStorage.getItem('ipo_theme');
-        if (t !== 'midnight' && t !== 'emerald' && t !== 'cyber') {
-          t = 'midnight';
-        }
-        document.documentElement.setAttribute('data-theme', t);
-        document.documentElement.classList.add('dark');
-        document.documentElement.classList.remove('light');
-      })();
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body class="text-zinc-100 font-sans antialiased selection:bg-sky-500/30 selection:text-sky-200 overflow-x-hidden">
     <div id="root"></div>

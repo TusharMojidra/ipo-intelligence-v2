@@ -5,7 +5,12 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/app.db")
+ENV_MODE = os.getenv("ENVIRONMENT", "development").lower()
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    if ENV_MODE == "production":
+        raise RuntimeError("FATAL: DATABASE_URL environment variable must be set in production mode.")
+    DATABASE_URL = "sqlite:///./data/app.db"
 
 # SQLAlchemy 2.0 requires postgresql:// instead of postgres://
 if DATABASE_URL.startswith("postgres://"):
@@ -63,4 +68,4 @@ def init_db():
                 if col_name not in existing_cols:
                     conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_def}"))
         except Exception as e:
-            print(f"Migration note: {e}")
+            raise RuntimeError(f"Database schema migration failed: {e}") from e

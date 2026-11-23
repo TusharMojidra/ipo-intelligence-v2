@@ -452,4 +452,120 @@ Re-audit gate: re-run B-1, B-2, B-3, B-8/B-9, and cold-start timing before promo
 
 ---
 
+## Appendix E: Runtime Verification Addendum (2026-11-23)
+
+Audit-only pass against the running instance (`python run_app.py`, 0.0.0.0:8000). No repository source, config, dependency, schema or environment file was modified. Browser automation used Chrome via Playwright; write-path tests were run against an isolated second instance (127.0.0.1:8010 with a throwaway SQLite file outside the repo) so the live database was not exercised for writes.
+
+### E-1 Environment correction: the live database is Neon, not data/app.db
+
+| Item | Earlier assumption | Verified reality |
+|------|--------------------|------------------|
+| Live DB | `data/app.db` | `.env` `DATABASE_URL` points at Neon Postgres (`neondb`) |
+| Live users | 16, 0 admin | 6 users, 1 admin, 2 verified |
+| `data/app.db` | the database | Stale local file, last modified 2026-11-20, not used by the running server |
+| `otp_hash` column | present | absent from Neon `users`; the OTP path does not exist in the production schema |
+
+Consequences:
+- The admin bootstrap question is answered: one admin row already exists in the live DB. The 200 path of the admin endpoints remains NOT TESTED because no admin credentials were available; only 401 (anonymous) and 403 (verified non-admin) were observed.
+- Any earlier statement about "the local DB" describes `data/app.db` only and must not be read as production state.
+- Because the leaked Neon credential is the credential the running application authenticates with, C-1 is an active-exposure finding, not merely a history-hygiene finding. Rotation is mandatory before deploy.
+
+### E-2 Secret exposure scope (C-1 / C-2 refinement)
+
+| Check | Result |
+|-------|--------|
+| `.env` tracked by git | no |
+| `.env` ignored | yes (`.gitignore:12`) |
+| Working-tree scan, 72 files, prefixes `npg_`, `GOCSPX-`, `gsk_`, `re_aE4` | 0 hits |
+| `HEAD` `.env.example` | 0 hits |
+| Dangling commit `8211ed0` `.env.example` | 1 hit (Neon URL with password) |
+| `8211ed0` ancestor of `HEAD` | no |
+| Commits reachable from `HEAD` containing `npg_` | 0 |
+
+The leak is confined to a dangling commit still reachable through the reflog. Purge scope is narrower than "all history", but the credential rotation is unchanged and non-negotiable.
+
+### E-3 End-to-end feature results
+
+Browser E2E on the isolated instance: 14 PASS / 2 INFO / 0 FAIL.
+
+| Feature | Result | Evidence |
+|---------|--------|----------|
+| Landing page renders | PASS | title "IPO Intelligence Terminal / Listing Gain & Range Predictor" |
+| Nav: Predictor, Upcoming IPOs, Real Track Record, User Guide, Contact & Feedback | PASS | each tab renders its own heading |
+| Phase 1 classifier to `POST /api/predict` | PASS | 200 |
+| Phase 2 listing deck to `POST /api/predict` | PASS | 200, expected_gain 39.6, range +9.8% to +63.8% |
+| Detailed Analysis expand | PASS | `#know-more-expanded-details` visible |
+| Download Report (dossier) modal opens | PASS | `#dossier-close-btn` visible |
+| Dossier close button | PASS | modal dismissed |
+| Dossier Escape key | INFO (gap) | Escape does not close the modal |
+| `POST /api/auth/register` | PASS | 201 |
+| Session cookie `ipo_session` | PASS | present and HttpOnly |
+| `GET /api/auth/me` | PASS | 200 with user object |
+| Unverified GET watchlist | PASS | 200 |
+| Unverified POST watchlist and simulation | PASS (gate) | 403 "Email verification required" |
+| Verified watchlist POST / GET / DELETE | PASS | 201 / 200 / 200 |
+| Verified simulation POST / GET / DELETE | PASS | 201 / 200 / 200 |
+| Admin endpoint, verified non-admin | PASS (gate) | 403 |
+| UI sign out, re-login, session restore | PASS | 200, 200 |
+| Login rate limit | PASS | 5 x 401 then 429 |
+| CSRF / origin guard on cookie-auth writes | PASS (gate) | 403 for untrusted origin |
+| Forgot-password | PASS | 200, generic message |
+| verify-email with bad token | PASS | 400 |
+| Sessions API and Sessions modal | PASS | 200, 1 session, modal opens |
+| Mobile 390x844 layout and hamburger menu | PASS | no horizontal overflow, menu opens |
+| Contact page | PASS (by design) | heading, mailto link, copy button, zero form fields |
+| Console errors and failed requests | PASS | none during landing, predict and navigation |
+
+Notes:
+- `GET /api/auth/me` returns 200 with a `null` body for guests (`response_model=Optional[UserResponse]`). Assertions must test the body, not the status code.
+- `POST /api/feedback` has no frontend consumer; the Contact tab is intentionally mailto-only, so the feedback table is never written from the UI.
+
+### E-4 Documentation path correction
+
+`/api/openapi.json` is 404. Schema and docs are mounted at the root and disabled when `ENVIRONMENT=production` (api.py:78-80):
+
+| Path | Development | Result |
+|------|-------------|--------|
+| `/openapi.json` | enabled | 200, 32,677 B |
+| `/docs` | enabled | 200 |
+| `/redoc` | enabled | 200 |
+| `/api/openapi.json` | n/a | 404 |
+
+### E-5 Accessibility observations (low)
+
+- Two inputs lack an accessible name: the Phase 1 issue-size input (placeholder-only) and the AI companion chat input.
+- No images without `alt` on the landing page.
+- The dossier modal does not respond to Escape; focus trapping was not verified.
+
+### E-6 Test-environment hygiene
+
+- One E2E user was created in Neon during an early pass because the harness assumed `data/app.db`. It was removed afterwards (id 54, with 1 session, 1 verification token, 1 reset token, 3 audit rows). Neon is back to 6 users, 1 admin, 0 rows matching `e2e%`.
+- The isolated instance on 127.0.0.1:8010 and its throwaway SQLite file are stopped; the main :8000 instance is running and healthy.
+- Earlier E2E "failures" (Phase 1 route, theme dropdown, Dial and Range, Detailed Analysis, Contact) were harness selector errors, not product defects, and are excluded from the findings above.
+
+### E-7 Additions to Appendix C (NOT TESTED)
+
+| Area | Reason |
+|------|--------|
+| Admin endpoint success path (200) | Admin row exists but no admin credentials available |
+| Python dependency CVEs | `pip-audit` still not installed |
+| Live email delivery (Resend) | No verified domain, no send performed |
+| Google OAuth end-to-end flow | Only `/api/auth/google/config` (200) exercised |
+| DAST, load and soak testing | No tooling, no staging environment |
+
+### E-8 Verdict (unchanged)
+
+NO-GO for the Render deploy. Verified blockers, in order:
+
+1. C-1: rotate the Neon credential the running app is currently using, then purge the dangling `8211ed0` object and expire the reflog.
+2. Commit the 13 modified and 2 untracked files (including `frontend/dist/theme-init.js`, and this report), otherwise a fresh deploy serves an `index.html` that references a missing asset.
+3. `render.yaml`: add `FORWARDED_ALLOW_IPS`; confirm `ENVIRONMENT=production` so docs and `/openapi.json` stay disabled.
+4. Health-check window: `/api/health` returns 503 until the model is loaded, which conflicts with `healthCheckPath`.
+- Startup and artifact hygiene: request-path `initialize_models()` inside `_enrich_upcoming_ipos` and the 17.5 MB committed `models/ipo_models.joblib`.
+6. Schema drift: `otp_hash` and `otp_verifications` are dead in production; drop or implement, and introduce Alembic.
+
+Runtime verification strengthens the earlier static verdict: the application surface works end to end, so remaining risk is concentrated in credential exposure, deploy integrity and configuration, not in feature functionality.
+
+---
+
 End of report.

@@ -7,7 +7,8 @@ import secrets
 import urllib.parse
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
+import jwt
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials
@@ -45,7 +46,9 @@ from backend.security import (
     clear_session_cookie,
     get_real_client_ip,
     security_bearer,
-    _DUMMY_ARGON2_HASH
+    _DUMMY_ARGON2_HASH,
+    JWT_SECRET_KEY,
+    JWT_ALGORITHM
 )
 from backend.email_service import (
     send_verification_email,
@@ -73,6 +76,58 @@ _MAX_SIGNUPS_PER_HOUR = 5
 
 # OAuth CSRF state cache: state -> metadata dict {"exp": float, "redirect_uri": str}
 _OAUTH_STATES: Dict[str, Any] = {}
+
+
+def generate_oauth_state(redirect_uri: str) -> str:
+    now = datetime.now(timezone.utc)
+    payload = {
+        "sub": "oauth_state",
+        "redirect_uri": redirect_uri,
+        "nonce": secrets.token_hex(16),
+        "iat": now,
+        "exp": now + timedelta(minutes=10)
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+
+def verify_oauth_state(state: str) -> Tuple[bool, str]:
+    """
+    Validates OAuth CSRF state:
+    1. Checks in-memory _OAUTH_STATES cache (or clears entry on use).
+    2. Verifies cryptographic signature and expiration via signed JWT state token.
+    Survives container restarts and multi-instance deployments.
+    """
+    now = time.time()
+    # 1. In-memory check
+    if state in _OAUTH_STATES:
+        state_entry = _OAUTH_STATES.pop(state)
+        exp_time = state_entry.get("exp", 0) if isinstance(state_entry, dict) else state_entry
+        saved_redirect_uri = state_entry.get("redirect_uri", GOOGLE_REDIRECT_URI) if isinstance(state_entry, dict) else GOOGLE_REDIRECT_URI
+        if now <= exp_time:
+            return True, saved_redirect_uri
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Expired OAuth session. Please attempt login again."
+        )
+
+    # 2. Cryptographic signed token check
+    try:
+        payload = jwt.decode(state, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        if payload.get("sub") == "oauth_state":
+            saved_redirect_uri = payload.get("redirect_uri", GOOGLE_REDIRECT_URI)
+            return True, saved_redirect_uri
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Expired OAuth session. Please attempt login again."
+        )
+    except Exception:
+        pass
+
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid or expired OAuth CSRF state. Please attempt login again."
+    )
 
 
 def check_rate_limit(ip: str):
@@ -215,12 +270,6 @@ def google_login_redirect(request: Request, redirect_uri: Optional[str] = None):
     if not GOOGLE_CLIENT_ID:
         return RedirectResponse(url="/?google_setup=needed")
 
-    state = secrets.token_urlsafe(32)
-    now = time.time()
-    expired = [k for k, val in _OAUTH_STATES.items() if now > (val.get("exp", 0) if isinstance(val, dict) else val)]
-    for k in expired:
-        _OAUTH_STATES.pop(k, None)
-
     # Determine redirect URI
     selected_redirect_uri = redirect_uri or GOOGLE_REDIRECT_URI
     host = request.headers.get("host", "") if request else ""
@@ -228,6 +277,12 @@ def google_login_redirect(request: Request, redirect_uri: Optional[str] = None):
         local_override = os.getenv("GOOGLE_REDIRECT_URI_LOCAL")
         if local_override:
             selected_redirect_uri = local_override
+
+    state = generate_oauth_state(selected_redirect_uri)
+    now = time.time()
+    expired = [k for k, val in _OAUTH_STATES.items() if now > (val.get("exp", 0) if isinstance(val, dict) else val)]
+    for k in expired:
+        _OAUTH_STATES.pop(k, None)
 
     _OAUTH_STATES[state] = {
         "exp": now + 600,
@@ -256,7 +311,7 @@ async def google_oauth_callback(
     db: Session = Depends(get_db)
 ):
     """Handles Google OAuth 2.0 authorization code callback from accounts.google.com."""
-    client_ip = request.client.host if request and request.client else "unknown"
+    client_ip = get_real_client_ip(request) if request else "unknown"
     user_agent = request.headers.get("user-agent", "unknown") if request else "unknown"
 
     if error:
@@ -265,22 +320,8 @@ async def google_oauth_callback(
     if not code:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing authorization code.")
 
-    # Validate CSRF state
-    now = time.time()
-    if not state or state not in _OAUTH_STATES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired OAuth CSRF state. Please attempt login again."
-        )
-    state_entry = _OAUTH_STATES.pop(state)
-    exp_time = state_entry.get("exp", 0) if isinstance(state_entry, dict) else state_entry
-    saved_redirect_uri = state_entry.get("redirect_uri", GOOGLE_REDIRECT_URI) if isinstance(state_entry, dict) else GOOGLE_REDIRECT_URI
-
-    if now > exp_time:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Expired OAuth session. Please attempt login again."
-        )
+    # Validate CSRF state (signed & expiring; survives restarts)
+    valid, saved_redirect_uri = verify_oauth_state(state)
 
     # Exchange code for tokens
     token_url = "https://oauth2.googleapis.com/token"

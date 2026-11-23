@@ -3,6 +3,7 @@ import sys
 import time
 from collections import defaultdict
 from dotenv import load_dotenv
+import joblib
 
 load_dotenv()
 
@@ -39,7 +40,7 @@ from src.companion_engine import query_groq_companion
 from backend.db import init_db, get_db
 from backend.routers.auth import router as auth_router
 from backend.routers.user_data import router as user_data_router
-from backend.security import get_optional_current_user, get_real_client_ip
+from backend.security import get_optional_current_user, get_real_client_ip, get_verified_user, get_admin_user
 from backend.models import User, FeedbackSubmission
 from backend.schemas import FeedbackCreate, FeedbackResponse, ContactInfoResponse
 from backend.email_service import send_feedback_email
@@ -55,9 +56,15 @@ STATE: Dict[str, Any] = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database tables
-    init_db()
+    try:
+        init_db()
+    except Exception as e:
+        print(f"Database initialization warning: {e}")
     if "clf" not in STATE:
-        initialize_models()
+        try:
+            initialize_models()
+        except Exception as e:
+            print(f"Model initialization error: {e}")
     yield
 
 
@@ -80,7 +87,6 @@ async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
-    response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
     response.headers["Cross-Origin-Embedder-Policy"] = "credentialless"
@@ -94,7 +100,7 @@ async def add_security_headers(request: Request, call_next):
     # Content Security Policy (allows self, Google OAuth, fonts, static assets, and blob workers)
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://accounts.google.com https://apis.google.com; "
+        "script-src 'self' https://accounts.google.com https://apis.google.com; "
         "worker-src 'self' blob:; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
@@ -168,7 +174,33 @@ app.include_router(user_data_router)
 
 
 def initialize_models():
-    """Load data and fit Phase 2 models in memory for fast inference."""
+    """Load pre-trained models from disk; fall back to retraining only if requested or artifact missing."""
+    model_path = os.getenv("MODEL_PATH", "models/ipo_models.joblib")
+    force_retrain = os.getenv("RETRAIN_ON_STARTUP", "false").lower() == "true"
+
+    if not force_retrain and os.path.exists(model_path):
+        try:
+            bundle = joblib.load(model_path)
+            if isinstance(bundle, dict) and "clf" in bundle and "scaler" in bundle:
+                STATE['clf'] = bundle['clf']
+                STATE['xgb_clf'] = bundle['clf'].named_estimators_['xgb']
+                STATE['rf_clf'] = bundle['clf'].named_estimators_['rf']
+                STATE['scaler'] = bundle['scaler']
+                STATE['huber'] = bundle['huber']
+                STATE['ols'] = bundle['ols']
+                STATE['rf_reg'] = bundle['rf_reg']
+                STATE['gbr_reg'] = bundle['gbr_reg']
+                STATE['q_low'] = bundle['q_low']
+                STATE['q_med'] = bundle['q_med']
+                STATE['q_high'] = bundle['q_high']
+                STATE['recent_ipos'] = bundle.get('recent_ipos', [])
+                STATE['df'] = bundle.get('df')
+                STATE['annual_median_size'] = float(bundle.get('annual_median_size', 600.0))
+                print(f"Pre-trained models loaded from {model_path} in fast mode.")
+                return
+        except Exception as e:
+            print(f"Could not load pre-trained {model_path}: {e}. Retraining...")
+
     print("Loading IPO dataset and market indicators...")
     data_path = 'data/processed/cleaned_ipo_data.csv'
     if not os.path.exists(data_path):
@@ -257,6 +289,26 @@ def initialize_models():
     STATE['recent_ipos'] = recent_ipos
     STATE['df'] = df
     STATE['annual_median_size'] = float(df[df['Year'] == 2024]['Issue_Size(crores)'].median() or 600.0)
+
+    try:
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        joblib.dump({
+            'clf': STATE['clf'],
+            'scaler': STATE['scaler'],
+            'huber': STATE['huber'],
+            'ols': STATE['ols'],
+            'rf_reg': STATE['rf_reg'],
+            'gbr_reg': STATE['gbr_reg'],
+            'q_low': STATE['q_low'],
+            'q_med': STATE['q_med'],
+            'q_high': STATE['q_high'],
+            'recent_ipos': STATE['recent_ipos'],
+            'df': STATE['df'],
+            'annual_median_size': STATE['annual_median_size']
+        }, model_path)
+    except Exception as e:
+        print(f"Model persistence note: {e}")
+
     print("Models initialized successfully.")
 
 
@@ -295,12 +347,21 @@ class Phase1PredictRequest(BaseModel):
 
 
 @app.get("/api/health")
-def get_health():
+def get_health(response: Response):
+    is_ready = "clf" in STATE
+    if not is_ready:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return {
+            "status": "initializing",
+            "service": "IPO Intelligence Terminal API",
+            "version": "2.0",
+            "models_loaded": False
+        }
     return {
         "status": "healthy",
         "service": "IPO Intelligence Terminal API",
         "version": "2.0",
-        "models_loaded": "clf" in STATE
+        "models_loaded": True
     }
 
 
@@ -420,9 +481,38 @@ def get_upcoming_ipos(force_live: bool = False):
     return _enrich_upcoming_ipos(data)
 
 
+_EXPENSIVE_ACTION_REQUESTS = defaultdict(list)
+_MAX_EXPENSIVE_PER_HOUR = 3
+
+
+def check_expensive_action_limit(endpoint_name: str, request: Request, user_id: int):
+    client_ip = get_real_client_ip(request)
+    now = time.time()
+
+    ip_key = f"{endpoint_name}:ip:{client_ip}"
+    recent_ip = [t for t in _EXPENSIVE_ACTION_REQUESTS[ip_key] if now - t < 3600]
+    if len(recent_ip) >= _MAX_EXPENSIVE_PER_HOUR:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Rate limit exceeded for {endpoint_name}. Maximum {_MAX_EXPENSIVE_PER_HOUR} requests per hour."
+        )
+
+    user_key = f"{endpoint_name}:user:{user_id}"
+    recent_user = [t for t in _EXPENSIVE_ACTION_REQUESTS[user_key] if now - t < 3600]
+    if len(recent_user) >= _MAX_EXPENSIVE_PER_HOUR:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Rate limit exceeded for {endpoint_name}. Maximum {_MAX_EXPENSIVE_PER_HOUR} requests per hour."
+        )
+
+    _EXPENSIVE_ACTION_REQUESTS[ip_key] = recent_ip + [now]
+    _EXPENSIVE_ACTION_REQUESTS[user_key] = recent_user + [now]
+
+
 @app.post("/api/upcoming-ipos/refresh")
-def refresh_upcoming_ipos():
-    """Trigger background refresh and scraping of upcoming IPOs feed."""
+def refresh_upcoming_ipos(request: Request, current_user: User = Depends(get_admin_user)):
+    """Trigger background refresh and scraping of upcoming IPOs feed (Admin only, max 3/hour)."""
+    check_expensive_action_limit("refresh_upcoming_ipos", request, current_user.id)
     data = fetch_upcoming_ipos(force_live=True)
     return _enrich_upcoming_ipos(data)
 
@@ -438,10 +528,14 @@ def get_history():
 
 
 @app.get("/api/test/classification")
-def test_classification_model():
-    """Evaluate and benchmark the Pre-IPO Directional Classification model on unseen out-of-time test data (Year > 2023)."""
+def test_classification_model(request: Request, current_user: User = Depends(get_admin_user)):
+    """Evaluate and benchmark the Pre-IPO Directional Classification model on unseen out-of-time test data (Admin only, max 3/hour)."""
+    check_expensive_action_limit("test_classification_model", request, current_user.id)
     if "clf" not in STATE or "df" not in STATE:
-        initialize_models()
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Models not loaded or initializing. Please retry once service is ready."
+        )
 
     clf = STATE["clf"]
     df = STATE["df"]

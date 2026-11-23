@@ -57,7 +57,7 @@ class TestSecurityHardening:
         assert res.status_code == 200
         assert res.headers.get("x-content-type-options") == "nosniff"
         assert res.headers.get("x-frame-options") == "DENY"
-        assert res.headers.get("x-xss-protection") == "1; mode=block"
+        assert "x-xss-protection" not in res.headers
         assert res.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
         assert "camera=()" in res.headers.get("permissions-policy", "")
 

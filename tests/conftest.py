@@ -43,6 +43,9 @@ app.dependency_overrides[get_db] = override_get_db
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_suite():
     """Create all schema tables in memory and initialize ML models for the test session."""
+    assert "sqlite" in str(db_module.engine.url), "SECURITY VIOLATION: Test engine is not SQLite!"
+    assert "neon.tech" not in str(db_module.engine.url), "SECURITY VIOLATION: Test engine is pointing to Neon!"
+    print(f"\n[TEST DB ISOLATION VERIFIED] Engine connected to {db_module.engine.url}. Zero calls to Neon.")
     Base.metadata.create_all(bind=test_engine)
     if "clf" not in STATE:
         initialize_models()

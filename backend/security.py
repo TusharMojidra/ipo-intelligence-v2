@@ -4,6 +4,7 @@ import hmac
 import hashlib
 import secrets
 import logging
+import ipaddress
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Tuple
 import bcrypt
@@ -64,22 +65,59 @@ PASSWORD_POLICY_REGEX = re.compile(
 )
 
 
+RFC_PRIVATE_NETWORKS = (
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+    ipaddress.ip_network("127.0.0.0/8"),
+    ipaddress.ip_network("::1/128"),
+    ipaddress.ip_network("fc00::/7"),
+)
+
+
+def _is_internal_ip(ip_str: str, trusted_proxies: set) -> bool:
+    if ip_str in trusted_proxies:
+        return True
+    try:
+        ip = ipaddress.ip_address(ip_str)
+        return any(ip in net for net in RFC_PRIVATE_NETWORKS)
+    except ValueError:
+        return False
+
+
 def get_real_client_ip(request: Request) -> str:
     """
     Safely resolves the true client IP:
-    1. If X-Forwarded-For is present (from reverse proxies like Render/Cloudflare),
-       extracts the leftmost client IP.
-    2. Falls back to request.client.host or '127.0.0.1'.
+    1. If request is behind a reverse proxy, inspects X-Forwarded-For from right to left
+       to find the first non-proxy hop (the hop appended by the reverse proxy).
+    2. If direct connection (non-internal, non-proxy), strictly trusts request.client.host
+       and rejects client-supplied X-Forwarded-For to prevent IP spoofing and rate limit bypass.
+    3. Falls back to request.client.host or '127.0.0.1'.
     """
-    forwarded = request.headers.get("x-forwarded-for")
+    trusted_raw = os.getenv("FORWARDED_ALLOW_IPS", "127.0.0.1,::1,localhost")
+    trusted_proxies = set(ip.strip() for ip in trusted_raw.split(",") if ip.strip())
+    raw_host = getattr(getattr(request, "client", None), "host", None)
+    client_host = raw_host if isinstance(raw_host, str) else None
+
+    # If direct connection from an external IP, ignore XFF header to prevent client spoofing
+    if client_host and client_host not in trusted_proxies and not _is_internal_ip(client_host, trusted_proxies) and client_host != "testclient":
+        return client_host
+
+    forwarded = request.headers.get("x-forwarded-for") if (request and hasattr(request, "headers")) else None
     if forwarded:
         parts = [p.strip() for p in forwarded.split(",") if p.strip()]
-        if parts:
-            candidate = parts[0]
-            if re.match(r"^[\da-fA-F.:]+$", candidate):
-                return candidate
-    if request.client and request.client.host:
-        return request.client.host
+        # Walk backwards from right to left to find proxy-appended hop
+        for p in reversed(parts):
+            if re.match(r"^[\da-fA-F.:]+$", p):
+                if not _is_internal_ip(p, trusted_proxies):
+                    return p
+        # If all hops are internal, take the rightmost valid format IP
+        for p in reversed(parts):
+            if re.match(r"^[\da-fA-F.:]+$", p):
+                return p
+
+    if client_host:
+        return client_host
     return "127.0.0.1"
 
 
@@ -369,6 +407,21 @@ def get_verified_user(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Email verification required. Please verify your email address to access this feature."
+        )
+    return current_user
+
+
+def get_admin_user(
+    current_user: User = Depends(get_verified_user)
+) -> User:
+    """
+    Enforces that the authenticated, verified user has admin privileges.
+    Non-admin accounts receive HTTP 403 Forbidden.
+    """
+    if getattr(current_user, "role", "user") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required."
         )
     return current_user
 

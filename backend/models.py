@@ -93,7 +93,7 @@ class OtpVerification(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     target = Column(String(255), index=True, nullable=False)  # Email or Mobile number
-    otp_code = Column(String(10), nullable=False)
+    otp_hash = Column(String(64), nullable=False)  # SHA-256 hash of OTP
     purpose = Column(String(50), default="login", nullable=False)  # 'login' | 'register' | 'verify'
     expires_at = Column(DateTime(timezone=True), nullable=False)
     is_used = Column(Boolean, default=False, nullable=False)

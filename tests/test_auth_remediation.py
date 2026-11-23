@@ -491,7 +491,7 @@ def test_security_headers_present(client):
     res = client.get("/api/auth/google/config")
     assert res.headers.get("x-content-type-options") == "nosniff"
     assert res.headers.get("x-frame-options") == "DENY"
-    assert res.headers.get("x-xss-protection") == "1; mode=block"
+    assert "x-xss-protection" not in res.headers
     assert "Content-Security-Policy" in res.headers
     assert "default-src 'self'" in res.headers["Content-Security-Policy"]
 
