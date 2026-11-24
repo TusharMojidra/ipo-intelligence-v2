@@ -27,6 +27,8 @@ services:
         value: "https://ipo-intelligence-terminal.onrender.com"
       - key: ALLOWED_ORIGINS
         value: "https://ipo-intelligence-terminal.onrender.com"
+      - key: FORWARDED_ALLOW_IPS
+        value: "*"
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET

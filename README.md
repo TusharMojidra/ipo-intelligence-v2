@@ -1,3 +1,13 @@
+---
+title: IPO Intelligence Terminal
+emoji: 📈
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # IPO Intelligence Terminal V2.0 (NSE / BSE)
 
 > **Institutional-grade, zero-dependency, 100% offline IPO intelligence platform for Indian Mainboard & SME offerings.**  

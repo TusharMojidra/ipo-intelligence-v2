@@ -142,14 +142,14 @@ async def csrf_origin_protection(request: Request, call_next):
             # Check Origin first
             if origin:
                 cleaned_origin = origin.rstrip("/")
-                if cleaned_origin not in TRUSTED_ORIGINS:
+                if cleaned_origin not in TRUSTED_ORIGINS and not cleaned_origin.endswith(".hf.space") and cleaned_origin != "https://huggingface.co":
                     return JSONResponse(
                         status_code=status.HTTP_403_FORBIDDEN,
                         content={"detail": "CSRF / Origin check failed: untrusted origin for cookie-authenticated request."}
                     )
             elif referer:
                 # Fallback to Referer check
-                matched = any(referer.startswith(trusted) for trusted in TRUSTED_ORIGINS)
+                matched = any(referer.startswith(trusted) for trusted in TRUSTED_ORIGINS) or ".hf.space" in referer or referer.startswith("https://huggingface.co")
                 if not matched:
                     return JSONResponse(
                         status_code=status.HTTP_403_FORBIDDEN,
