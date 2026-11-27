@@ -1085,7 +1085,44 @@ def robots_txt():
 Allow: /
 Disallow: /api/
 
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+
 Sitemap: {base_url}/sitemap.xml
+"""
+
+
+@app.get("/llms.txt", response_class=PlainTextResponse)
+def llms_txt():
+    """Machine-readable product & benchmark summary for AI search engines."""
+    base_url = os.getenv("APP_BASE_URL", "https://ipo-intelligence-terminal.onrender.com").rstrip("/")
+    return f"""# IPO Intelligence Terminal V2.0
+
+> Free AI-powered Indian IPO listing gain and price corridor predictor for NSE & BSE Mainboard and SME IPOs.
+
+- URL: {base_url}/
+- Pricing: Free (INR 0) — instant interactive predictions without login required.
+
+## Core Capabilities
+- **Phase 1 Pre-IPO Classifier:** Voting Ensemble (XGBoost + Random Forest) predicting listing direction before subscription closes.
+- **Phase 2 Post-Subscription Forecaster:** Huber Robust Regressor + Quantile Gradient Boosting predicting expected listing gain (%) and an 80% confidence price corridor.
+- **QIB / HNI / Retail Sensitivity Simulator:** Stress-test listing outcomes across subscription multiples and Nifty 50 macro regimes.
+- **4-Axis Safety Audit:** Automated red-flag checks for OFS/promoter exit ratio, anchor institutional buffer, issue size digestion, and Nifty momentum.
+
+## Verified Out-of-Time Benchmarks (210 Indian IPOs, Year > 2023)
+- Directional Accuracy (Phase 2): 75.12%
+- 80% Confidence Corridor Hit Rate: 79.43%
+- Huber Mean Absolute Error (MAE): 16.62%
+- Pre-IPO Profitable Debut Recall: 86.4%
 """
 
 
